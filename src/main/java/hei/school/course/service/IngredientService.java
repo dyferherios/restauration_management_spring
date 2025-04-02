@@ -1,72 +1,73 @@
 package hei.school.course.service;
 
-import hei.school.course.entity.Criteria;
-import hei.school.course.entity.Ingredient;
-import hei.school.course.repository.CrudOperations;
-import hei.school.course.repository.IngredientCrudOperations;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import edu.hei.school.restaurant.service.exception.ClientException;
+import hei.school.course.dao.operations.IngredientCrudOperations;
+import hei.school.course.dao.operations.PriceCrudOperations;
+import hei.school.course.model.Ingredient;
+import hei.school.course.model.Price;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class IngredientService {
-
-
     private final IngredientCrudOperations ingredientCrudOperations;
+    private final PriceCrudOperations priceCrudOperations;
 
-    public IngredientService(IngredientCrudOperations ingredientCrudOperations) {
-        this.ingredientCrudOperations = ingredientCrudOperations;
-    }
-
-    public List<Ingredient> getAll(int page, int size) throws SQLException {
-        return ingredientCrudOperations.getAll(page, size);
-    }
-
-    public Ingredient findById(Long id){
-        System.out.println("passed");
-        return ingredientCrudOperations.findById(id);
-    }
-
-    public List<Ingredient> filterByMaxAndMinPrice(Double priceMaxFilter, Double priceMinFilter, int page, int size) throws SQLException {
+    public List<Ingredient> getIngredientsByPrices(Double priceMinFilter, Double priceMaxFilter, Integer page, Integer size) {
         if (priceMinFilter != null && priceMinFilter < 0) {
-            throw new IllegalArgumentException("Error: " + priceMinFilter + " can't be negative.");
+            throw new ClientException("PriceMinFilter " + priceMinFilter + " is negative");
         }
-
         if (priceMaxFilter != null && priceMaxFilter < 0) {
-            throw new IllegalArgumentException("Error: " + priceMaxFilter + " can't be negative.");
+            throw new ClientException("PriceMaxFilter " + priceMaxFilter + " is negative");
         }
-
-        if (priceMinFilter != null && priceMaxFilter != null && priceMinFilter > priceMaxFilter) {
-            throw new IllegalArgumentException("Error: " + priceMinFilter + " can't be greater than " + priceMaxFilter);
-        }
-
-        List<Ingredient> ingredients = ingredientCrudOperations.getAll(page, size);
-        if (priceMaxFilter != null || priceMinFilter != null) {
-            if (priceMinFilter == null) {
-                ingredients = ingredients.stream()
-                        .filter(ingredient -> ingredient.getActualPrice() <= priceMaxFilter)
-                        .toList();
-            } else if (priceMaxFilter == null) {
-                ingredients = ingredients.stream()
-                        .filter(ingredient -> ingredient.getActualPrice() >= priceMinFilter)
-                        .toList();
-            } else {
-                ingredients = ingredients.stream()
-                        .filter(ingredient -> ingredient.getActualPrice() >= priceMinFilter && ingredient.getActualPrice() <= priceMaxFilter)
-                        .toList();
+        if (priceMinFilter != null && priceMaxFilter != null) {
+            if (priceMinFilter > priceMaxFilter) {
+                throw new ClientException("PriceMinFilter " + priceMinFilter + " is greater than PriceMaxFilter " + priceMaxFilter);
             }
         }
 
-        return ingredients;
+        List<Ingredient> ingredients = ingredientCrudOperations.getAll(page, size);
+
+        return ingredients.stream()
+                .filter(ingredient -> {
+                    if (priceMinFilter == null && priceMaxFilter == null) {
+                        return true;
+                    }
+                    Double unitPrice = ingredient.getActualPrice();
+                    if (priceMinFilter != null && priceMaxFilter == null) {
+                        return unitPrice >= priceMinFilter;
+                    }
+                    if (priceMinFilter == null) {
+                        return unitPrice <= priceMaxFilter;
+                    }
+                    return unitPrice >= priceMinFilter && unitPrice <= priceMaxFilter;
+                })
+                .toList();
     }
 
-    public List<Ingredient> saveAll(List<Ingredient> ingredients){
+    public List<Ingredient> getAll(Integer page, Integer size) {
+        return ingredientCrudOperations.getAll(page, size);
+    }
+
+    public Ingredient getById(Long id) {
+        return ingredientCrudOperations.findById(id);
+    }
+
+    public List<Ingredient> saveAll(List<Ingredient> ingredients) {
         return ingredientCrudOperations.saveAll(ingredients);
+
     }
 
+    public Ingredient addPrices(Long ingredientId, List<Price> pricesToAdd) {
+       Ingredient ingredient = ingredientCrudOperations.findById(ingredientId);
+        pricesToAdd.forEach(price -> price.setIngredient(ingredient));
+        priceCrudOperations.saveAll(pricesToAdd);
+        return ingredientCrudOperations.findById(ingredientId);
+    }
 }
