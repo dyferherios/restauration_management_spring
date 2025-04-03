@@ -7,6 +7,7 @@ import hei.school.course.dao.Datasource;
 import hei.school.course.dao.mapper.IngredientMapper;
 import hei.school.course.model.Ingredient;
 import hei.school.course.model.Price;
+import hei.school.course.model.StockMovement;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Repository;
@@ -77,6 +78,10 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
                 + " returning id, name";
         try (Connection connection = dataSource.getConnection()) {
                 entities.forEach(entityToSave -> {
+                    List<Price> prices = entityToSave.getPrices();
+                    List<StockMovement> stockMovements = entityToSave.getStockMovements();
+                    List<Price> addedPrices = List.of();
+                    List<StockMovement> addedStockMovements = List.of();
                     if (entityToSave.getId() != null) {
                         try (PreparedStatement stmt = connection.prepareStatement(sqlWithId)) {
                             stmt.setLong(1, entityToSave.getId());
@@ -84,10 +89,16 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
                             try (ResultSet rs = stmt.executeQuery()) {
                                 if (rs.next()) {
                                     Ingredient ingredient = ingredientMapper.apply(rs);
-                                    entityToSave.getPrices().forEach(price -> price.setIngredient(ingredient));
-                                    priceCrudOperations.saveAll(entityToSave.getPrices());
-                                    ingredient.setStockMovements(entityToSave.getStockMovements());
-                                    stockMovementCrudOperations.saveAll(ingredient.getStockMovements());
+                                    if (prices!=null && !prices.isEmpty()){
+                                        entityToSave.getPrices().forEach(price -> price.setIngredient(ingredient));
+                                        addedPrices = priceCrudOperations.saveAll(entityToSave.getPrices());
+                                    }
+                                    if(stockMovements!=null && !stockMovements.isEmpty()){
+                                        entityToSave.getStockMovements().forEach(stockMovement -> stockMovement.setIngredient(ingredient));
+                                        addedStockMovements = stockMovementCrudOperations.saveAll(entityToSave.getStockMovements());
+                                    }
+                                    ingredient.addPrices(addedPrices);
+                                    ingredient.addStockMovements(addedStockMovements);
                                     ingredients.add(ingredient);
                                 }
                             }
@@ -100,10 +111,16 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
                             try (ResultSet rs = stmt.executeQuery()) {
                                 if (rs.next()) {
                                     Ingredient ingredient = ingredientMapper.apply(rs);
-//                                    ingredient.setPrices(entityToSave.getPrices());
-//                                    priceCrudOperations.saveAll(ingredient.getPrices());
-//                                    ingredient.setStockMovements(entityToSave.getStockMovements());
-//                                    stockMovementCrudOperations.saveAll(ingredient.getStockMovements());
+                                     if (prices!=null && !prices.isEmpty()){
+                                        entityToSave.getPrices().forEach(price -> price.setIngredient(ingredient));
+                                        addedPrices = priceCrudOperations.saveAll(entityToSave.getPrices());
+                                    }
+                                    if(stockMovements!=null && !stockMovements.isEmpty()){
+                                        entityToSave.getStockMovements().forEach(stockMovement -> stockMovement.setIngredient(ingredient));
+                                        addedStockMovements = stockMovementCrudOperations.saveAll(entityToSave.getStockMovements());
+                                    }
+                                    ingredient.addPrices(addedPrices);
+                                    ingredient.addStockMovements(addedStockMovements);
                                     ingredients.add(ingredient);
                                 }
                             }
@@ -113,6 +130,7 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
                     }
                 });
             }
+        System.out.println(ingredients);
         return ingredients;
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.time.Instant.now;
 
@@ -35,15 +36,18 @@ public class StockMovementCrudOperations implements CrudOperations<StockMovement
         List<StockMovement> stockMovements = new ArrayList<>();
         String sqlWithId = """
                 insert into stock_movement (id, quantity, unit, movement_type, creation_datetime, id_ingredient)
-                values (?, ?, ?, ?, ?, ?)
+                values (?, ?::unit, ?::stock_movement_type, ?, ?, ?)
                 on conflict (id) do nothing returning id, quantity, unit, movement_type, creation_datetime, id_ingredient""";
         String sqlWithoutId = """
                 insert into stock_movement (quantity, unit, movement_type, creation_datetime, id_ingredient)
-                values (?, ?, ?, ?, ?)
+                values (?, ?::unit, ?::stock_movement_type, ?, ?)
                 on conflict (id) do nothing returning id, quantity, unit, movement_type, creation_datetime, id_ingredient""";
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement statementWithId = connection.prepareStatement(sqlWithId);
             PreparedStatement statementWithoutId = connection.prepareStatement(sqlWithoutId);
+            AtomicInteger withIdCount = new AtomicInteger();
+            AtomicInteger withoutIdCount = new AtomicInteger();
+
             entities.forEach(entityToSave -> {
                 int index = 1;
                 if(entityToSave.getId() != null){
@@ -55,6 +59,7 @@ public class StockMovementCrudOperations implements CrudOperations<StockMovement
                         statementWithId.setTimestamp(index++, Timestamp.from(now()));
                         statementWithId.setLong(index, entityToSave.getIngredient().getId());
                         statementWithId.addBatch();
+                        withIdCount.getAndIncrement();
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -66,19 +71,26 @@ public class StockMovementCrudOperations implements CrudOperations<StockMovement
                         statementWithoutId.setTimestamp(index++, Timestamp.from(now()));
                         statementWithoutId.setLong(index, entityToSave.getIngredient().getId());
                         statementWithoutId.addBatch();
+                        withoutIdCount.getAndIncrement();
+                        System.out.println(statementWithoutId);
                     } catch (SQLException e) {
                         throw new ServerException(e);
                     }
                 }
             });
-            try (ResultSet resultSet = statementWithId.executeQuery()) {
-                while (resultSet.next()) {
-                    stockMovements.add(stockMovementMapper.apply(resultSet));
+            if (withIdCount.get() > 0) {
+                try (ResultSet rs = statementWithId.executeQuery()) {
+                    while (rs.next()) {
+                        stockMovements.add(stockMovementMapper.apply(rs));
+                    }
                 }
             }
-            try (ResultSet resultSet = statementWithoutId.executeQuery()) {
-                while (resultSet.next()) {
-                    stockMovements.add(stockMovementMapper.apply(resultSet));
+
+            if (withoutIdCount.get() > 0) {
+                try (ResultSet rs = statementWithoutId.executeQuery()) {
+                    while (rs.next()) {
+                        stockMovements.add(stockMovementMapper.apply(rs));
+                    }
                 }
             }
             return stockMovements;
