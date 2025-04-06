@@ -4,10 +4,9 @@ package hei.school.course.dao.operations;
 import edu.hei.school.restaurant.service.exception.NotFoundException;
 import edu.hei.school.restaurant.service.exception.ServerException;
 import hei.school.course.dao.Datasource;
+import hei.school.course.dao.mapper.DishIngredientMapper;
 import hei.school.course.dao.mapper.IngredientMapper;
-import hei.school.course.model.Ingredient;
-import hei.school.course.model.Price;
-import hei.school.course.model.StockMovement;
+import hei.school.course.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Repository;
@@ -26,6 +25,7 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
     private final IngredientMapper ingredientMapper;
     private final PriceCrudOperations priceCrudOperations;
     private final StockMovementCrudOperations stockMovementCrudOperations;
+    private final DishIngredientMapper dishIngredientMapper;
 
     @Override
     public List<Ingredient> getAll(int page, int size) {
@@ -130,7 +130,27 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
                     }
                 });
             }
-        System.out.println(ingredients);
         return ingredients;
+    }
+
+    public List<DishIngredient> findByDishId(Long dishId) {
+        List<DishIngredient> dishIngredients = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement("select i.id, i.name, di.id as dish_ingredient_id, di.required_quantity, di.unit from ingredient i"
+                     + " join dish_ingredient di on i.id = di.id_ingredient"
+                     + " where di.id_dish = ?")) {
+            statement.setLong(1, dishId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Ingredient ingredient = ingredientMapper.apply(resultSet);
+                    DishIngredient dishIngredient = dishIngredientMapper.apply(resultSet);
+                    dishIngredient.setIngredient(ingredient);
+                    dishIngredients.add(dishIngredient);
+                }
+                return dishIngredients;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

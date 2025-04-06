@@ -4,8 +4,10 @@ package hei.school.course.service;
 import edu.hei.school.restaurant.service.exception.ClientException;
 import hei.school.course.dao.operations.IngredientCrudOperations;
 import hei.school.course.dao.operations.PriceCrudOperations;
+import hei.school.course.dao.operations.StockMovementCrudOperations;
 import hei.school.course.model.Ingredient;
 import hei.school.course.model.Price;
+import hei.school.course.model.StockMovement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import java.util.List;
 public class IngredientService {
     private final IngredientCrudOperations ingredientCrudOperations;
     private final PriceCrudOperations priceCrudOperations;
+    private final StockMovementCrudOperations stockMovementCrudOperations;
 
     public List<Ingredient> getIngredientsByPrices(Double priceMinFilter, Double priceMaxFilter, Integer page, Integer size) {
         if (priceMinFilter != null && priceMinFilter < 0) {
@@ -61,13 +64,19 @@ public class IngredientService {
 
     public List<Ingredient> saveAll(List<Ingredient> ingredients) {
         return ingredientCrudOperations.saveAll(ingredients);
-
     }
 
     public Ingredient addPrices(Long ingredientId, List<Price> pricesToAdd) {
-       Ingredient ingredient = ingredientCrudOperations.findById(ingredientId);
+        Ingredient ingredient = ingredientCrudOperations.findById(ingredientId);
         pricesToAdd.forEach(price -> price.setIngredient(ingredient));
         priceCrudOperations.saveAll(pricesToAdd);
+        return ingredientCrudOperations.findById(ingredientId);
+    }
+
+    public Ingredient addStockMovements(Long ingredientId, List<StockMovement> stockMovementToAdd){
+        Ingredient ingredient = ingredientCrudOperations.findById(ingredientId);
+        stockMovementToAdd.forEach(stockMovement -> stockMovement.setIngredient(ingredient));
+        stockMovementCrudOperations.saveAll(stockMovementToAdd);
         return ingredientCrudOperations.findById(ingredientId);
     }
 }

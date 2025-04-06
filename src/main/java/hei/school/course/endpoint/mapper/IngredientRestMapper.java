@@ -8,6 +8,8 @@ import hei.school.course.endpoint.rest.IngredientRest;
 import hei.school.course.endpoint.rest.PriceRest;
 import hei.school.course.endpoint.rest.StockMovementRest;
 import hei.school.course.model.Ingredient;
+import hei.school.course.model.Price;
+import hei.school.course.model.StockMovement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +34,21 @@ public class IngredientRestMapper {
     public Ingredient toModel(CreateOrUpdateIngredient newIngredient) {
         Ingredient ingredient = new Ingredient();
         ingredient.setName(newIngredient.getName());
+        ingredient.setPrices(new ArrayList<>());
+        ingredient.setStockMovements(new ArrayList<>());
+        if(newIngredient.getPrices()!=null && !newIngredient.getPrices().isEmpty()){
+            List<Price> prices = new ArrayList<>(newIngredient.getPrices().stream()
+                    .map(priceRest -> priceRestMapper.toModel(priceRest))
+                    .toList());
+            ingredient.setPrices(prices);
+        }
+
+        if(newIngredient.getStockMovements()!=null && !newIngredient.getStockMovements().isEmpty()){
+            List<StockMovement> stockMovements = new ArrayList<>(newIngredient.getStockMovements().stream()
+                    .map(stockMovementRest -> stockMovementRestMapper.toModel(stockMovementRest)).toList());
+            ingredient.setStockMovements(stockMovements);
+        }
+
         if(newIngredient.getId()!=null){
             ingredient.setId(newIngredient.getId());
             try {
@@ -42,9 +59,6 @@ public class IngredientRestMapper {
                 ingredient.addPrices(new ArrayList<>());
                 ingredient.addStockMovements(new ArrayList<>());
             }
-        }else{
-            ingredient.setPrices(new ArrayList<>());
-            ingredient.setStockMovements(new ArrayList<>());
         }
 
         return ingredient;

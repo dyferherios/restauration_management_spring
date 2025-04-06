@@ -1,12 +1,8 @@
 package hei.school.course.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import static java.time.LocalDate.now;
 
@@ -14,6 +10,8 @@ import static java.time.LocalDate.now;
 @NoArgsConstructor
 @Builder
 @Data
+@Getter
+@Setter
 public class Price {
     private Long id;
     private Ingredient ingredient;

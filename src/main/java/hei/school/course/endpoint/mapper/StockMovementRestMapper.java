@@ -19,4 +19,16 @@ public class StockMovementRestMapper implements Function<StockMovement, StockMov
                 stockMovement.getMovementType(),
                 stockMovement.getCreationDatetime());
     }
+
+    public StockMovement toModel(StockMovementRest stockMovementRest){
+        StockMovement stockMovement = new StockMovement();
+        if (stockMovementRest.getId()!=null){
+            stockMovement.setId(stockMovementRest.getId());
+        }
+        stockMovement.setQuantity(stockMovementRest.getQuantity());
+        stockMovement.setMovementType(stockMovementRest.getType());
+        stockMovement.setUnit(stockMovementRest.getUnit());
+        stockMovement.setCreationDatetime(stockMovementRest.getCreationDatetime());
+        return stockMovement;
+    }
 }
