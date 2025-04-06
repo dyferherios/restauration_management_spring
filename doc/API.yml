@@ -1,0 +1,287 @@
+openapi: 3.1.0
+info:
+  title: Restaurant Management API - 2025 [J]
+  description: Restaurant Management API - 2025 [J]
+  version: 1.1.0
+servers:
+  - url: 'https://localhost:8080'
+paths:
+  /ingredients:
+    get:
+      tags:
+        - ingredient
+      summary: Get list of ingredients
+      description: List of ingredients
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        200:
+          description: List of ingredients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ingredient'
+
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /ingredients/{id}:
+    get:
+      tags:
+        - ingredient
+      summary: Get a specific ingredient by its id
+      description: Specific ingredient
+      parameters:
+        - $ref: '#/components/parameters/IngredientIdentifier'
+      responses:
+        200:
+          description: Specific ingredient
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ingredient"
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /ingredients/{IngredientIdentifier}/prices:
+    put:
+      tags:
+        - ingredient
+      summary: Add new prices to a specifc ingredient
+      parameters:
+        - $ref: '#/components/parameters/IngredientIdentifier'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Price'
+        required: true
+      responses:
+        200:
+          description: The specific ingredient with updated price history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ingredient'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /ingredients/{IngredientIdentifier}/stockMovements:
+    put:
+      tags:
+        - ingredient
+      summary: Add new stock movements to a specifc ingredient
+      parameters:
+        - $ref: '#/components/parameters/IngredientIdentifier'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/StockMovement'
+        required: true
+      responses:
+        200:
+          description: The specific ingredient with updated stockMovement history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ingredient'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+components:
+  parameters:
+    IngredientIdentifier:
+      in: path
+      name: id
+      schema:
+        type: integer
+      required: true
+    Page:
+      in: query
+      name: page
+      schema:
+        type: integer
+    PageSize:
+      in: query
+      name: pageSize
+      schema:
+        type: integer
+  schemas:
+    Dish:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        availableQuantity:
+          type: integer
+        actualPrice:
+          type: number
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/DishIngredient'
+    DishIngredient:
+      type: object
+      properties:
+        requiredQuantity:
+          type: number
+        unit:
+          $ref: '#/components/schemas/Unit'
+        ingredient:
+          $ref: '#/components/schemas/IngredientBasicProperty'
+    IngredientBasicProperty:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    Ingredient:
+      type: object
+      properties:
+        prices:
+          type: array
+          items:
+            $ref: '#/components/schemas/Price'
+        stockMovements:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockMovement'
+        availableQuantity:
+          type: number
+        actualPrice:
+          type: number
+      allOf:
+        - $ref: '#/components/schemas/IngredientBasicProperty'
+    Price:
+      type: object
+      properties:
+        id:
+          type: integer
+        price:
+          type: number
+        dateValue:
+          type: string
+          format: date
+    StockMovement:
+      type: object
+      properties:
+        id:
+          type: integer
+        quantity:
+          type: number
+        unit:
+          $ref: '#/components/schemas/Unit'
+        type:
+          $ref: '#/components/schemas/StockMovementType'
+        creationDatetime:
+          type: string
+          format: date-time
+    StockMovementType:
+      type: string
+      enum:
+        - IN
+        - OUT
+    Unit:
+      type: string
+      enum:
+        - G
+        - U
+        - L
+    ClientException:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: "Invalid request parameters"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-01-15T10:30:00Z"
+      required:
+        - status
+        - message
+    NotFoundException:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 404
+        message:
+          type: string
+          example: "Ingredient not found with id: 999"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-01-15T10:30:00Z"
+      required:
+        - status
+        - message
+
+    ServerException:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 500
+        message:
+          type: string
+          example: "Internal server error"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-01-15T10:30:00Z"
+      required:
+        - status
+        - message
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ClientException'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NotFoundException'
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ServerException'

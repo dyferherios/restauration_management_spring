@@ -93,9 +93,13 @@ public class IngredientRestController {
     public ResponseEntity<Object> updateIngredientPrices(@PathVariable Long ingredientId, @RequestBody List<CreateIngredientPrice> ingredientPrices) {
         try{
             List<Price> prices = ingredientPrices.stream()
-                    .map(ingredientPrice ->
-                            new Price(ingredientPrice.getAmount(), ingredientPrice.getDateValue()))
+                    .map(ingredientPrice ->{
+                                System.out.println(ingredientPrice.getDateValue() );
+                                return new Price(ingredientPrice.getAmount(), ingredientPrice.getDateValue());
+                            }
+                            )
                     .toList();
+            System.out.println(prices);
             Ingredient ingredient = ingredientService.addPrices(ingredientId, prices);
             IngredientRest ingredientRest = ingredientRestMapper.toRest(ingredient);
             return ResponseEntity.ok().body(ingredientRest);
@@ -110,7 +114,7 @@ public class IngredientRestController {
 
     @PutMapping("/ingredients/{ingredientId}/stockMovements")
     public ResponseEntity<Object> updateIngredientStockMovement(@PathVariable Long ingredientId,
-                                                                List<StockMovementRest> stockMovementRests) {
+                                                                @RequestBody List<StockMovementRest> stockMovementRests) {
         try {
             List<StockMovement> stockMovements = stockMovementRests.stream()
                     .map(stockMovementRestMapper::toModel)
