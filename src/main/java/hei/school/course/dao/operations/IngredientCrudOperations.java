@@ -4,6 +4,7 @@ package hei.school.course.dao.operations;
 import edu.hei.school.restaurant.service.exception.NotFoundException;
 import edu.hei.school.restaurant.service.exception.ServerException;
 import hei.school.course.dao.Datasource;
+import hei.school.course.dao.mapper.DishIngredientMapper;
 import hei.school.course.dao.mapper.IngredientMapper;
 import hei.school.course.model.*;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
     private final IngredientMapper ingredientMapper;
     private final PriceCrudOperations priceCrudOperations;
     private final StockMovementCrudOperations stockMovementCrudOperations;
+    private final DishIngredientMapper dishIngredientMapper;
 
     @Override
     public List<Ingredient> getAll(int page, int size) {
@@ -131,5 +133,68 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
         return ingredients;
     }
 
+    @SneakyThrows
+    public List<DishIngredient> findbyDishId(Long dishId){
+        List<DishIngredient> dishIngredients = new ArrayList<>();
+        try(Connection connection = dataSource.getConnection();
+        PreparedStatement statement = connection.prepareStatement(
+                "select i.id as id_ingredient, i.name, di.id as id, di.required_quantity, di.unit from ingredient i"
+                        + " join dish_ingredient di on i.id = di.id_ingredient"
+                        + " where di.id_dish = ?"
+        )){
+            statement.setLong(1, dishId);
+            try(ResultSet resultSet=statement.executeQuery()){
+                while(resultSet.next()){
+                    DishIngredient dishIngredient;
+                    dishIngredient = dishIngredientMapper.apply(resultSet);
+                    dishIngredient.setIngredient(findById(resultSet.getLong("id")));
+                    dishIngredients.add(dishIngredient);
+                }
+            }
+        }
+        return dishIngredients;
+    }
+
+    @SneakyThrows
+    public List<DishIngredient> saveDishIngredient(Dish dish){
+        List<DishIngredient> savedDishIngredients = new ArrayList<>();
+        String sqlWithId = "insert into dish_ingredient (id, id_dish, id_ingredient, required_quantity, unit) " +
+                "values(?, ?, ?, ?, ?::unit) on conflict (id, id_dish, id_ingredient) do update set required_quantity=excluded.required_quantity " +
+                "returning id, id_dish, id_ingredient, required_quantity, unit";
+        String sqlWithOutId = "insert into dish_ingredient (id_dish, id_ingredient, required_quantity, unit) " +
+                "values(?, ?, ?, ?::unit) on conflict (id_dish, id_ingredient) do update set required_quantity=excluded.required_quantity " +
+                "returning id, id_dish, id_ingredient, required_quantity, unit";
+        try(Connection connection = dataSource.getConnection()){
+            PreparedStatement statementWithId = connection.prepareStatement(sqlWithId);
+            PreparedStatement statementWithOutId = connection.prepareStatement(sqlWithOutId);
+            for (DishIngredient dishIngredient : dish.getDishIngredients()) {
+                int index = 1;
+                PreparedStatement statement;
+
+                if (dishIngredient.getId() != null) {
+                    statement = statementWithId;
+                    statement.setLong(index++, dishIngredient.getId());
+                    statement.setLong(index++, dish.getId());
+                    statement.setLong(index++, dishIngredient.getIngredient().getId());
+                    statement.setDouble(index++, dishIngredient.getRequiredQuantity());
+                    statement.setString(index, String.valueOf(dishIngredient.getUnit()));
+                } else {
+                    statement = statementWithOutId;
+                    statement.setLong(index++, dish.getId());
+                    statement.setLong(index++, dishIngredient.getIngredient().getId());
+                    statement.setDouble(index++, dishIngredient.getRequiredQuantity());
+                    statement.setString(index, String.valueOf(dishIngredient.getUnit()));
+                }
+                try(ResultSet resultSet = statement.executeQuery()){
+                   if(resultSet.next()){
+                       savedDishIngredients = findbyDishId(resultSet.getLong("id_dish"));
+                   }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            };
+        }
+        return savedDishIngredients;
+    }
 
 }
