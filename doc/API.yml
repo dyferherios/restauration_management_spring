@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Restaurant Management API - 2025 [J]
   description: Restaurant Management API - 2025 [J]
-  version: 1.1.0
+  version: 1.2.0
 servers:
   - url: 'https://localhost:8080'
 paths:
@@ -111,10 +111,50 @@ paths:
           $ref: '#/components/responses/NotFound'
         500:
           $ref: '#/components/responses/ServerError'
+  /dishes:
+    get:
+      tags:
+        - dish
+      summary: Get list of dishes
+      description: List of dishes
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        200:
+          description: List of dishes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dish'
+  /dishes/{id}/ingredients:
+    put:
+      tags:
+        - dish
+      summary: Add ingredients with a required quantity
+      description: Ingredients with required quantity
+      parameters:
+        - $ref: '#/components/parameters/DishIdentifier'
+      requestBody:
+        $ref: '#/components/schemas/DishIngredient'
+      responses:
+        201: 
+          description: Ingredients added succefully
+          content:
+            application/json:
+              schema:
+                $ref:  '#/components/schemas/Dish'
 
 components:
   parameters:
     IngredientIdentifier:
+      in: path
+      name: id
+      schema:
+        type: integer
+      required: true
+      example: 1
+    DishIdentifier:
       in: path
       name: id
       schema:
@@ -125,23 +165,29 @@ components:
       name: page
       schema:
         type: integer
+      example: 1
     PageSize:
       in: query
       name: pageSize
       schema:
         type: integer
+      example: 10
   schemas:
     Dish:
       type: object
       properties:
         id:
           type: integer
+          example: 1
         name:
           type: string
+          example: 'Hot dog'
         availableQuantity:
           type: integer
+          example: 10
         actualPrice:
           type: number
+          example: 15000.0
         ingredients:
           type: array
           items:
@@ -151,6 +197,7 @@ components:
       properties:
         requiredQuantity:
           type: number
+          example: 5
         unit:
           $ref: '#/components/schemas/Unit'
         ingredient:
@@ -160,8 +207,10 @@ components:
       properties:
         id:
           type: integer
+          example: 1
         name:
           type: string
+          example: 'Oeuf'
     Ingredient:
       type: object
       properties:
@@ -175,8 +224,10 @@ components:
             $ref: '#/components/schemas/StockMovement'
         availableQuantity:
           type: number
+          example: 50
         actualPrice:
           type: number
+          example: 1200.0
       allOf:
         - $ref: '#/components/schemas/IngredientBasicProperty'
     Price:
@@ -184,18 +235,23 @@ components:
       properties:
         id:
           type: integer
+          example: 1
         price:
           type: number
+          example: 1200
         dateValue:
           type: string
           format: date
+          example: "2025-04-07T03:14:28.750Z"
     StockMovement:
       type: object
       properties:
         id:
           type: integer
+          example: 1
         quantity:
           type: number
+          example: 10
         unit:
           $ref: '#/components/schemas/Unit'
         type:
@@ -203,6 +259,7 @@ components:
         creationDatetime:
           type: string
           format: date-time
+          example: "2025-04-07T03:14:28.750Z"
     StockMovementType:
       type: string
       enum:
