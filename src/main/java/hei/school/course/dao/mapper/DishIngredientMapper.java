@@ -21,7 +21,7 @@ public class DishIngredientMapper implements Function<ResultSet, DishIngredient>
     @Override
     public DishIngredient apply(ResultSet resultSet) {
        DishIngredient dishIngredient = new DishIngredient();
-       dishIngredient.setId(resultSet.getLong("dish_ingredient_id"));
+       dishIngredient.setId(resultSet.getLong("id"));
        dishIngredient.setUnit(Unit.valueOf(resultSet.getString("unit")));
        dishIngredient.setRequiredQuantity(resultSet.getDouble("required_quantity"));
        return dishIngredient;

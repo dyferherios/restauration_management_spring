@@ -1,5 +1,6 @@
 package hei.school.course.endpoint.rest;
 
+import hei.school.course.model.Unit;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,4 +16,5 @@ public class DishIngredientRest {
     private Long id;
     private IngredientBasicRest ingredientBasicRest;
     private Double requiredQuantity;
+    private Unit unit;
 }

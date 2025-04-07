@@ -99,7 +99,6 @@ public class IngredientRestController {
                             }
                             )
                     .toList();
-            System.out.println(prices);
             Ingredient ingredient = ingredientService.addPrices(ingredientId, prices);
             IngredientRest ingredientRest = ingredientRestMapper.toRest(ingredient);
             return ResponseEntity.ok().body(ingredientRest);

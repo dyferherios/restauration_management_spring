@@ -133,11 +133,12 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
         return ingredients;
     }
 
+    @SneakyThrows
     public List<DishIngredient> findbyDishId(Long dishId){
         List<DishIngredient> dishIngredients = new ArrayList<>();
         try(Connection connection = dataSource.getConnection();
         PreparedStatement statement = connection.prepareStatement(
-                "select i.id, i.name, di.id as dish_ingredient_id, di.required_quantity, di.unit from ingredient i"
+                "select i.id as id_ingredient, i.name, di.id as id, di.required_quantity, di.unit from ingredient i"
                         + " join dish_ingredient di on i.id = di.id_ingredient"
                         + " where di.id_dish = ?"
         )){
@@ -150,10 +151,50 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
                     dishIngredients.add(dishIngredient);
                 }
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
         return dishIngredients;
+    }
+
+    @SneakyThrows
+    public List<DishIngredient> saveDishIngredient(Dish dish){
+        List<DishIngredient> savedDishIngredients = new ArrayList<>();
+        String sqlWithId = "insert into dish_ingredient (id, id_dish, id_ingredient, required_quantity, unit) " +
+                "values(?, ?, ?, ?, ?::unit) on conflict (id, id_dish, id_ingredient) do update set required_quantity=excluded.required_quantity " +
+                "returning id, id_dish, id_ingredient, required_quantity, unit";
+        String sqlWithOutId = "insert into dish_ingredient (id_dish, id_ingredient, required_quantity, unit) " +
+                "values(?, ?, ?, ?::unit) on conflict (id_dish, id_ingredient) do update set required_quantity=excluded.required_quantity " +
+                "returning id, id_dish, id_ingredient, required_quantity, unit";
+        try(Connection connection = dataSource.getConnection()){
+            PreparedStatement statementWithId = connection.prepareStatement(sqlWithId);
+            PreparedStatement statementWithOutId = connection.prepareStatement(sqlWithOutId);
+            for (DishIngredient dishIngredient : dish.getDishIngredients()) {
+                int index = 1;
+                PreparedStatement statement;
+
+                if (dishIngredient.getId() != null) {
+                    statement = statementWithId;
+                    statement.setLong(index++, dishIngredient.getId());
+                    statement.setLong(index++, dish.getId());
+                    statement.setLong(index++, dishIngredient.getIngredient().getId());
+                    statement.setDouble(index++, dishIngredient.getRequiredQuantity());
+                    statement.setString(index, String.valueOf(dishIngredient.getUnit()));
+                } else {
+                    statement = statementWithOutId;
+                    statement.setLong(index++, dish.getId());
+                    statement.setLong(index++, dishIngredient.getIngredient().getId());
+                    statement.setDouble(index++, dishIngredient.getRequiredQuantity());
+                    statement.setString(index, String.valueOf(dishIngredient.getUnit()));
+                }
+                try(ResultSet resultSet = statement.executeQuery()){
+                   if(resultSet.next()){
+                       savedDishIngredients = findbyDishId(resultSet.getLong("id_dish"));
+                   }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            };
+        }
+        return savedDishIngredients;
     }
 
 }

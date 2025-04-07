@@ -16,6 +16,7 @@ public class DishRestMapper {
     @Autowired DishIngredientRestMapper dishIngredientRestMapper;
 
     public DishRest toRest(Dish dish){
+
         List<DishIngredientRest> dishIngredientRestList = dish.getDishIngredients().stream()
                 .map(dishIngredient -> dishIngredientRestMapper.apply(dishIngredient))
                 .toList();
@@ -26,5 +27,18 @@ public class DishRestMapper {
                 dish.getPrice(),
                 dish.getAvailableQuantity()
         );
+    }
+
+    public Dish toModel(DishRest dishRest){
+        Dish dish = new Dish();
+        if(dishRest.getId()!=null){
+            dish.setId(dishRest.getId());
+        }
+        dish.setName(dishRest.getName());
+        dish.setPrice(dishRest.getPrice());
+        List<DishIngredient> dishIngredients = dishRest.getDishIngredients().stream()
+                        .map(dishIngredientRest -> dishIngredientRestMapper.toModel(dishIngredientRest)).toList();
+        dish.setDishIngredients(dishIngredients);
+        return dish;
     }
 }
