@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Restaurant Management API - 2025 [J]
   description: Restaurant Management API - 2025 [J]
-  version: 1.1.0
+  version: 1.3.0
 servers:
   - url: 'https://localhost:8080'
 paths:
@@ -111,6 +111,134 @@ paths:
           $ref: '#/components/responses/NotFound'
         500:
           $ref: '#/components/responses/ServerError'
+  /dishes:
+    get:
+      tags:
+        - dish
+      summary: Get list of dishes
+      description: List of dishes
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        200:
+          description: List of dishes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dish'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /dishes/{id}/ingredients:
+    put:
+      tags:
+        - dish
+      summary: Add ingredients with a required quantity
+      description: Ingredients with required quantity
+      parameters:
+        - $ref: '#/components/parameters/DishIdentifier'
+      requestBody:
+        $ref: '#/components/schemas/DishIngredient'
+      responses:
+        201: 
+          description: Ingredients added succefully
+          content:
+            application/json:
+              schema:
+                $ref:  '#/components/schemas/Dish'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /orders/{reference}:
+    get:
+      tags:
+        - order
+      summary: Get all dish ordered by order reference
+      description: Dishes ordered by order reference
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        200: 
+          description: Dishes ordered by order reference
+          content:
+            application/json: 
+              schema: 
+                items:
+                  $ref: '#/components/schemas/Order'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+  /orders/{reference}/dishes: 
+    put: 
+      tags:
+        - order
+      summary: Update dish order of one specific order 
+      description:  Update dish order of one specific order
+      requestBody: 
+        content:
+          application/json:
+            schema: 
+              items:
+                $ref: '#/components/schemas/DishOrderToAdd'
+        required: true
+      responses:
+        201: 
+          description: Dish added succefully
+          content:
+            application/json:
+              schema: 
+                items: 
+                  $ref: '#/components/schemas/Order'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+          
+  /orders/{reference}/dishes/{dishId}: 
+    put: 
+      tags:
+        - order
+      summary: Updated status of one dish inside an order
+      description: Updated status of one dish inside an order
+      parameters:
+        - $ref: '#/components/parameters/OrderReference'
+        - $ref: '#/components/parameters/DishIdentifier'
+      requestBody: 
+        content:
+          application/json:
+            schema: 
+              items: 
+                $ref: '#/components/schemas/BasicOrderAndDishStatus'
+      responses:
+        201:
+          description: Dish status updated succefully
+          content: 
+            application/json:
+              schema:
+                items: 
+                  $ref: '#/components/schemas/Order'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
 
 components:
   parameters:
@@ -120,28 +248,49 @@ components:
       schema:
         type: integer
       required: true
+      example: 1
+    DishIdentifier:
+      in: path
+      name: id
+      schema:
+        type: integer
+      example: 1
+      required: true
     Page:
       in: query
       name: page
       schema:
         type: integer
+      example: 1
     PageSize:
       in: query
       name: pageSize
       schema:
         type: integer
+      example: 10
+    OrderReference:
+      in: path
+      name: reference
+      schema: 
+        type: string
+        example: order1
+      required: true
   schemas:
     Dish:
       type: object
       properties:
         id:
           type: integer
+          example: 1
         name:
           type: string
+          example: 'Hot dog'
         availableQuantity:
           type: integer
+          example: 10
         actualPrice:
           type: number
+          example: 15000.0
         ingredients:
           type: array
           items:
@@ -151,6 +300,7 @@ components:
       properties:
         requiredQuantity:
           type: number
+          example: 5
         unit:
           $ref: '#/components/schemas/Unit'
         ingredient:
@@ -160,8 +310,10 @@ components:
       properties:
         id:
           type: integer
+          example: 1
         name:
           type: string
+          example: 'Oeuf'
     Ingredient:
       type: object
       properties:
@@ -175,8 +327,10 @@ components:
             $ref: '#/components/schemas/StockMovement'
         availableQuantity:
           type: number
+          example: 50
         actualPrice:
           type: number
+          example: 1200.0
       allOf:
         - $ref: '#/components/schemas/IngredientBasicProperty'
     Price:
@@ -184,18 +338,23 @@ components:
       properties:
         id:
           type: integer
+          example: 1
         price:
           type: number
+          example: 1200
         dateValue:
           type: string
           format: date
+          example: "2025-04-07T03:14:28.750Z"
     StockMovement:
       type: object
       properties:
         id:
           type: integer
+          example: 1
         quantity:
           type: number
+          example: 10
         unit:
           $ref: '#/components/schemas/Unit'
         type:
@@ -203,6 +362,7 @@ components:
         creationDatetime:
           type: string
           format: date-time
+          example: "2025-04-07T03:14:28.750Z"
     StockMovementType:
       type: string
       enum:
@@ -214,6 +374,84 @@ components:
         - G
         - U
         - L
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        reference: 
+          type: string
+          example: order1
+        dishOrders:
+          type: array
+          items:
+            $ref: '#/components/schemas/DishOrder'
+        status: 
+          type: array
+          items: 
+            $ref: '#/components/schemas/BasicOrderAndDishStatus'
+        amount: 
+          type: number
+          example: 15000
+    DishOrder:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: 'Hot dog'
+        availableQuantity:
+          type: integer
+          example: 10
+        actualPrice:
+          type: number
+          example: 15000.0
+        status: 
+          type: array
+          items:
+            $ref: '#/components/schemas/BasicOrderAndDishStatus'
+    DishOrderToAdd:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: 'Hot dog'
+        availableQuantity:
+          type: integer
+          example: 10
+        actualPrice:
+          type: number
+          example: 15000.0
+    
+    BasicOrderAndDishStatus: 
+      type: object
+      properties:
+        id: 
+          type: integer
+          example: 1
+        status: 
+          $ref: '#/components/schemas/Status'
+        statusDate: 
+          type: string
+          format: date-time
+          example: "2025-04-08T03:14:28.750Z"
+
+      
+    Status: 
+      type: string
+      enum:
+        - CREATED 
+        - CONFIRMED 
+        - IN_PROGRESS 
+        - FINISHED 
+        - DELIVERED
+    
     ClientException:
       type: object
       properties:
@@ -238,7 +476,7 @@ components:
           example: 404
         message:
           type: string
-          example: "Ingredient not found with id: 999"
+          example: "Not found"
         timestamp:
           type: string
           format: date-time
