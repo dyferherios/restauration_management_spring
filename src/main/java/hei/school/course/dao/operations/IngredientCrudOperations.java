@@ -4,6 +4,7 @@ package hei.school.course.dao.operations;
 import edu.hei.school.restaurant.service.exception.NotFoundException;
 import edu.hei.school.restaurant.service.exception.ServerException;
 import hei.school.course.dao.Datasource;
+import hei.school.course.dao.mapper.DishIngredientMapper;
 import hei.school.course.dao.mapper.IngredientMapper;
 import hei.school.course.model.*;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
     private final IngredientMapper ingredientMapper;
     private final PriceCrudOperations priceCrudOperations;
     private final StockMovementCrudOperations stockMovementCrudOperations;
+    private final DishIngredientMapper dishIngredientMapper;
 
     @Override
     public List<Ingredient> getAll(int page, int size) {
@@ -131,5 +133,27 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
         return ingredients;
     }
 
+    public List<DishIngredient> findbyDishId(Long dishId){
+        List<DishIngredient> dishIngredients = new ArrayList<>();
+        try(Connection connection = dataSource.getConnection();
+        PreparedStatement statement = connection.prepareStatement(
+                "select i.id, i.name, di.id as dish_ingredient_id, di.required_quantity, di.unit from ingredient i"
+                        + " join dish_ingredient di on i.id = di.id_ingredient"
+                        + " where di.id_dish = ?"
+        )){
+            statement.setLong(1, dishId);
+            try(ResultSet resultSet=statement.executeQuery()){
+                while(resultSet.next()){
+                    DishIngredient dishIngredient;
+                    dishIngredient = dishIngredientMapper.apply(resultSet);
+                    dishIngredient.setIngredient(findById(resultSet.getLong("id")));
+                    dishIngredients.add(dishIngredient);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return dishIngredients;
+    }
 
 }
