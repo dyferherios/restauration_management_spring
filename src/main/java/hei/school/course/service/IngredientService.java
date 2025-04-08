@@ -1,13 +1,13 @@
 package hei.school.course.service;
 
 
-import edu.hei.school.restaurant.service.exception.ClientException;
 import hei.school.course.dao.operations.IngredientCrudOperations;
 import hei.school.course.dao.operations.PriceCrudOperations;
 import hei.school.course.dao.operations.StockMovementCrudOperations;
 import hei.school.course.model.Ingredient;
 import hei.school.course.model.Price;
 import hei.school.course.model.StockMovement;
+import hei.school.course.service.exception.ClientException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

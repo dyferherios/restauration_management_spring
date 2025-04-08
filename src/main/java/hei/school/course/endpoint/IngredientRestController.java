@@ -1,9 +1,5 @@
 package hei.school.course.endpoint;
 
-import edu.hei.school.restaurant.service.exception.ClientException;
-import edu.hei.school.restaurant.service.exception.NotFoundException;
-import edu.hei.school.restaurant.service.exception.ServerException;
-
 import hei.school.course.endpoint.mapper.IngredientRestMapper;
 import hei.school.course.endpoint.mapper.StockMovementRestMapper;
 import hei.school.course.endpoint.rest.CreateIngredientPrice;
@@ -14,12 +10,14 @@ import hei.school.course.model.Ingredient;
 import hei.school.course.model.Price;
 import hei.school.course.model.StockMovement;
 import hei.school.course.service.IngredientService;
+import hei.school.course.service.exception.ClientException;
+import hei.school.course.service.exception.NotFoundException;
+import hei.school.course.service.exception.ServerException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 

@@ -6,7 +6,7 @@ info:
 servers:
   - url: 'https://localhost:8080'
 paths:
-  /ingredients:
+  /ingredients: 
     get:
       tags:
         - ingredient
