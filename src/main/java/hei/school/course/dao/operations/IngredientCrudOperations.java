@@ -1,12 +1,12 @@
 package hei.school.course.dao.operations;
 
 
-import edu.hei.school.restaurant.service.exception.NotFoundException;
-import edu.hei.school.restaurant.service.exception.ServerException;
 import hei.school.course.dao.Datasource;
 import hei.school.course.dao.mapper.DishIngredientMapper;
 import hei.school.course.dao.mapper.IngredientMapper;
 import hei.school.course.model.*;
+import hei.school.course.service.exception.NotFoundException;
+import hei.school.course.service.exception.ServerException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Repository;

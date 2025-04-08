@@ -1,7 +1,6 @@
 package hei.school.course.endpoint.mapper;
 
 
-import edu.hei.school.restaurant.service.exception.NotFoundException;
 import hei.school.course.dao.operations.IngredientCrudOperations;
 import hei.school.course.endpoint.rest.CreateOrUpdateIngredient;
 import hei.school.course.endpoint.rest.IngredientRest;
@@ -10,6 +9,7 @@ import hei.school.course.endpoint.rest.StockMovementRest;
 import hei.school.course.model.Ingredient;
 import hei.school.course.model.Price;
 import hei.school.course.model.StockMovement;
+import hei.school.course.service.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

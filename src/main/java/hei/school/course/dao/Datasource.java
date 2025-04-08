@@ -1,6 +1,6 @@
 package hei.school.course.dao;
 
-import edu.hei.school.restaurant.service.exception.ServerException;
+import hei.school.course.service.exception.ServerException;
 import org.springframework.context.annotation.Configuration;
 
 import java.sql.Connection;
