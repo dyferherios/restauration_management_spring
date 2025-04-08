@@ -1,9 +1,9 @@
 package hei.school.course.dao.operations;
 
-import edu.hei.school.restaurant.service.exception.ServerException;
 import hei.school.course.dao.Datasource;
 import hei.school.course.dao.mapper.StockMovementMapper;
 import hei.school.course.model.StockMovement;
+import hei.school.course.service.exception.ServerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 

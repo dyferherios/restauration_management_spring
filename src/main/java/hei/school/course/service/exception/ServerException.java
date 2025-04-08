@@ -1,4 +1,4 @@
-package edu.hei.school.restaurant.service.exception;
+package hei.school.course.service.exception;
 
 public class ServerException extends RuntimeException {
     public ServerException(Exception e) {

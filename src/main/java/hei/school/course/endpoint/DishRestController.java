@@ -1,8 +1,5 @@
 package hei.school.course.endpoint;
 
-import edu.hei.school.restaurant.service.exception.ClientException;
-import edu.hei.school.restaurant.service.exception.NotFoundException;
-import edu.hei.school.restaurant.service.exception.ServerException;
 
 import hei.school.course.endpoint.mapper.DishIngredientRestMapper;
 import hei.school.course.endpoint.mapper.DishRestMapper;
@@ -11,6 +8,9 @@ import hei.school.course.endpoint.rest.DishRest;
 import hei.school.course.model.Dish;
 import hei.school.course.model.DishIngredient;
 import hei.school.course.service.DishService;
+import hei.school.course.service.exception.ClientException;
+import hei.school.course.service.exception.NotFoundException;
+import hei.school.course.service.exception.ServerException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

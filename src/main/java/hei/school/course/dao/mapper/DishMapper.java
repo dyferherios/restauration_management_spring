@@ -22,7 +22,7 @@ public class DishMapper implements Function<ResultSet, Dish> {
         Long dishId = resultSet.getLong("id");
         dish.setId(dishId);
         dish.setName(resultSet.getString("name"));
-        dish.setDishIngredients(ingredientCrudOperations.findbyDishId(dishId));
+        dish.setDishIngredients(ingredientCrudOperations.findByDishId(dishId));
         dish.setPrice(resultSet.getDouble("price"));
         return dish;
     }

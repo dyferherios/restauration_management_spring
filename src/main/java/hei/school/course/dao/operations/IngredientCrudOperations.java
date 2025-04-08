@@ -1,12 +1,12 @@
 package hei.school.course.dao.operations;
 
 
-import edu.hei.school.restaurant.service.exception.NotFoundException;
-import edu.hei.school.restaurant.service.exception.ServerException;
 import hei.school.course.dao.Datasource;
 import hei.school.course.dao.mapper.DishIngredientMapper;
 import hei.school.course.dao.mapper.IngredientMapper;
 import hei.school.course.model.*;
+import hei.school.course.service.exception.NotFoundException;
+import hei.school.course.service.exception.ServerException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Repository;
@@ -134,7 +134,7 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
     }
 
     @SneakyThrows
-    public List<DishIngredient> findbyDishId(Long dishId){
+    public List<DishIngredient> findByDishId(Long dishId){
         List<DishIngredient> dishIngredients = new ArrayList<>();
         try(Connection connection = dataSource.getConnection();
         PreparedStatement statement = connection.prepareStatement(
@@ -147,7 +147,7 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
                 while(resultSet.next()){
                     DishIngredient dishIngredient;
                     dishIngredient = dishIngredientMapper.apply(resultSet);
-                    dishIngredient.setIngredient(findById(resultSet.getLong("id")));
+                    dishIngredient.setIngredient(findById(resultSet.getLong("id_ingredient")));
                     dishIngredients.add(dishIngredient);
                 }
             }
@@ -187,7 +187,7 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
                 }
                 try(ResultSet resultSet = statement.executeQuery()){
                    if(resultSet.next()){
-                       savedDishIngredients = findbyDishId(resultSet.getLong("id_dish"));
+                       savedDishIngredients = findByDishId(resultSet.getLong("id_dish"));
                    }
                 } catch (Exception e) {
                     throw new RuntimeException(e);
