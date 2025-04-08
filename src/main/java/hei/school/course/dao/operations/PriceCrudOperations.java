@@ -3,7 +3,6 @@ package hei.school.course.dao.operations;
 
 import hei.school.course.dao.Datasource;
 import hei.school.course.dao.mapper.PriceMapper;
-import hei.school.course.endpoint.rest.PriceRest;
 import hei.school.course.model.Price;
 import hei.school.course.service.exception.ServerException;
 import lombok.SneakyThrows;
