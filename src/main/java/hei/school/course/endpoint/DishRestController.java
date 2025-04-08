@@ -1,6 +1,5 @@
 package hei.school.course.endpoint;
 
-
 import hei.school.course.endpoint.mapper.DishIngredientRestMapper;
 import hei.school.course.endpoint.mapper.DishRestMapper;
 import hei.school.course.endpoint.rest.DishIngredientRest;
