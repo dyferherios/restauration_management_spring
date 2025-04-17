@@ -226,7 +226,6 @@ public class DishCrudOperations implements CrudOperations<Dish> {
                 + " returning id, id_order, id_dish_order, dish_status as status, creation_date";
         try(Connection connection = datasource.getConnection()){
             PreparedStatement statement = connection.prepareStatement(sql);
-
             dishOrderList.forEach(dishOrder -> {
                 int index = 1;
                 try{
