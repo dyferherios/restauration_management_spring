@@ -5,16 +5,15 @@ import hei.school.course.dao.mapper.DishAndOrderStatusMapper;
 import hei.school.course.dao.mapper.DishMapper;
 import hei.school.course.dao.mapper.DishOrderMapper;
 import hei.school.course.model.*;
+import hei.school.course.service.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.xml.crypto.Data;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,9 +61,22 @@ public class DishCrudOperations implements CrudOperations<Dish> {
         }
     }
 
+    @SneakyThrows
     @Override
     public Dish findByCriteria(Criteria criteria) {
-        return null;
+        Dish dish;
+        try (Connection connection = datasource.getConnection();
+             PreparedStatement statement = connection.prepareStatement("select d.id, d.name, d.price from dish d where 1=1 and " + "d." + criteria.getKey() + " = ?")) {
+            statement.setObject(1, criteria.getValue());
+            System.out.println("dish statement : " + statement);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    dish = dishMapper.apply(resultSet);
+                    return dish;
+                }
+            }
+            throw new NotFoundException("Dish with " + criteria.getKey() + " : " + criteria.getValue() + " not found");
+        }
     }
 
     @Override
@@ -168,10 +180,10 @@ public class DishCrudOperations implements CrudOperations<Dish> {
 
         String sqlWithId = "insert into dish_order (id, id_dish, id_order, quantity) values (?, ?, ?, ?)"
                 + " on conflict (id_dish, id_order) do update set quantity=excluded.quantity"
-                + " returning id, id_dish, id_order, quantity";
+                + " returning id as id_dish_order, id_dish, id_order, quantity";
         String sqlWithoutId = "insert into dish_order (id_dish, id_order, quantity) values (?, ?, ?)"
                 + " on conflict (id_dish, id_order) do update set quantity=excluded.quantity"
-                + " returning id, id_dish, id_order, quantity";
+                + " returning id as id_dish_order, id_dish, id_order, quantity";
 
         try (Connection connection = datasource.getConnection()) {
             PreparedStatement statementWithId = connection.prepareStatement(sqlWithId);
@@ -193,6 +205,7 @@ public class DishCrudOperations implements CrudOperations<Dish> {
                     try(ResultSet resultSet = statement.executeQuery()){
                         if(resultSet.next()){
                             DishOrder dishOrderSaved = dishOrderMapper.apply(resultSet);
+                            dishOrderSaved.setDish(findByCriteria(new Criteria("id", resultSet.getLong("id_dish"))));
                             dishOrderSaves.add(dishOrderSaved);
                         }
                     }
@@ -203,6 +216,38 @@ public class DishCrudOperations implements CrudOperations<Dish> {
         }
 
         return dishOrderSaves;
+    }
+
+    @SneakyThrows
+    public List<DishAndOrderStatus> saveDishOrderStatus(List<DishOrder> dishOrderList){
+        List<DishAndOrderStatus> dishAndOrderStatusSaves = new ArrayList<>();
+        String sql = "insert into dish_order_status (id_order, id_dish_order, dish_status, creation_date) values (?, ?, ?::order_status_process, ?)"
+                + " on conflict (id_order, id_dish_order, dish_status) do nothing"
+                + " returning id, id_order, id_dish_order, dish_status as status, creation_date";
+        try(Connection connection = datasource.getConnection()){
+            PreparedStatement statement = connection.prepareStatement(sql);
+
+            dishOrderList.forEach(dishOrder -> {
+                int index = 1;
+                try{
+                   statement.setLong(index++, dishOrder.getOrder().getId());
+                   statement.setLong(index++, dishOrder.getId());
+                   statement.setString(index++, String.valueOf(dishOrder.getStatus().getLast().getStatus()));
+                   statement.setObject(index, Timestamp.from(Instant.now()));
+                    System.out.println(statement);
+                   try(ResultSet resultSet = statement.executeQuery()){
+                       if(resultSet.next()){
+                            DishAndOrderStatus dishAndOrderStatusSaved = dishAndOrderStatusMapper.apply(resultSet);
+                            dishAndOrderStatusSaves.add(dishAndOrderStatusSaved);
+                       }
+                   }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+
+        return dishAndOrderStatusSaves;
     }
 
 

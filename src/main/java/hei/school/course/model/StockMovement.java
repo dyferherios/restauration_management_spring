@@ -11,6 +11,7 @@ import java.time.Instant;
 @Data
 @Getter
 @Setter
+@ToString(exclude = {"ingredient"})
 public class StockMovement {
     private Long id;
     private Ingredient ingredient;
@@ -18,4 +19,5 @@ public class StockMovement {
     private Unit unit;
     private StockMovementType movementType;
     private Instant creationDatetime;
+
 }

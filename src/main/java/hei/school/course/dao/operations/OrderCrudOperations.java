@@ -84,8 +84,8 @@ public class OrderCrudOperations  implements CrudOperations<Order>{
                     try(ResultSet resultSet = statement.executeQuery()){
                         if(resultSet.next()){
                             Order orderSaved = orderMapper.apply(resultSet);
+                            orderSaved.setStatus(getOrderStatus(orderSaved.getId()));
                             orders.add(orderSaved);
-                            
                         }
                     }
                 } catch (SQLException e) {
@@ -123,9 +123,6 @@ public class OrderCrudOperations  implements CrudOperations<Order>{
             statement.setLong(1, order.getId());
             statement.setString(2, String.valueOf(order.getStatus().getFirst().getStatus()));
             statement.setObject(3, order.getCreationDate());
-            System.out.println(order.getCreationDate());
-            System.out.println(statement);
-            System.out.println("passed here");
             try(ResultSet resultset = statement.executeQuery()){
                 if(resultset.next()){
                     DishAndOrderStatus dishAndOrderStatus = dishAndOrderStatusMapper.apply(resultset);
