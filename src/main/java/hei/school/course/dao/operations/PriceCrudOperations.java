@@ -3,6 +3,8 @@ package hei.school.course.dao.operations;
 
 import hei.school.course.dao.Datasource;
 import hei.school.course.dao.mapper.PriceMapper;
+import hei.school.course.endpoint.rest.PriceRest;
+import hei.school.course.model.Criteria;
 import hei.school.course.model.Price;
 import hei.school.course.service.exception.ServerException;
 import lombok.SneakyThrows;
@@ -28,6 +30,11 @@ public class PriceCrudOperations implements CrudOperations<Price> {
     @Override
     public Price findById(Long id) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Price findByCriteria(Criteria criteria) {
+        return null;
     }
 
     @SneakyThrows

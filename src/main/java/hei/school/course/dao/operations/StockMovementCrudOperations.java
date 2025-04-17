@@ -2,6 +2,7 @@ package hei.school.course.dao.operations;
 
 import hei.school.course.dao.Datasource;
 import hei.school.course.dao.mapper.StockMovementMapper;
+import hei.school.course.model.Criteria;
 import hei.school.course.model.StockMovement;
 import hei.school.course.service.exception.ServerException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,11 @@ public class StockMovementCrudOperations implements CrudOperations<StockMovement
     }
 
     @Override
+    public StockMovement findByCriteria(Criteria criteria) {
+        return null;
+    }
+
+    @Override
     public List<StockMovement> saveAll(List<StockMovement> entities) {
         List<StockMovement> stockMovements = new ArrayList<>();
         String sqlWithId = """
@@ -42,6 +48,7 @@ public class StockMovementCrudOperations implements CrudOperations<StockMovement
                 insert into stock_movement (quantity, unit, movement_type, creation_datetime, id_ingredient)
                 values (?, ?::unit, ?::stock_movement_type, ?, ?)
                 on conflict (id) do nothing returning id, quantity, unit, movement_type, creation_datetime, id_ingredient""";
+
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement statementWithId = connection.prepareStatement(sqlWithId);
             PreparedStatement statementWithoutId = connection.prepareStatement(sqlWithoutId);
