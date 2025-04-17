@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 @Component
-
+@ToString(exclude={"order"})
 public class DishOrder {
     private Long id;
     private Dish dish;

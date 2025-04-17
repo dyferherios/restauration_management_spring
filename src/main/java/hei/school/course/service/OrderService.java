@@ -35,6 +35,7 @@ public class OrderService {
            System.out.println("order saved : " + orderSaved);
        }
        orderSaved.setStatus(order.getStatus());
+       System.out.println("order to save status : " + orderSaved);
        List<DishAndOrderStatus> statusList = orderCrudOperations.saveOrderStatus(orderSaved);
        if(statusList.isEmpty()){
            statusList = orderCrudOperations.getOrderStatus(orderSaved.getId());
@@ -42,8 +43,9 @@ public class OrderService {
        orderSaved.setStatus(statusList);
        System.out.println("order saved with status list : " + orderSaved);
        if(orderSaved.getDishOrders()!=null){
-           List<DishOrder> dishOrders = getDishOrders(orderSaved, statusList.getFirst());
+           List<DishOrder> dishOrders = getDishOrders(orderSaved, statusList.getLast());
            saveDishAndOrderStatus(dishOrders);
+           System.out.println("dish orders : " + dishOrders);
        }
 
        System.out.println(orderSaved);

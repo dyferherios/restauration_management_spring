@@ -29,10 +29,11 @@ public class IngredientRestController {
     private final StockMovementRestMapper stockMovementRestMapper;
 
     @GetMapping("/ingredients")
-    public ResponseEntity<Object> getIngredients(@RequestParam(name = "priceMinFilter", required = false) Double priceMinFilter,
-                                                 @RequestParam(name = "priceMaxFilter", required = false) Double priceMaxFilter,
-                                                 @RequestParam(name = "page", required = false) Integer page,
-                                                 @RequestParam(name = "size", required = false) Integer size) {
+    public ResponseEntity<Object> getIngredients(
+            @RequestParam(name = "priceMinFilter", required = false) Double priceMinFilter,
+            @RequestParam(name = "priceMaxFilter", required = false) Double priceMaxFilter,
+            @RequestParam(name = "page", required = false) Integer page,
+            @RequestParam(name = "size", required = false) Integer size){
         size = size == null ? 500 : size;
         page = page == null ? 1 : page;
         try {
