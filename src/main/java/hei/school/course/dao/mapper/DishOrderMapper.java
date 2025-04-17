@@ -16,7 +16,7 @@ public class DishOrderMapper implements Function<ResultSet, DishOrder> {
     @Override
     public DishOrder apply(ResultSet resultSet) {
         DishOrder dishOrder = new DishOrder();
-        dishOrder.setId(resultSet.getLong("id"));
+        dishOrder.setId(resultSet.getLong("id_dish_order"));
         dishOrder.setQuantity(resultSet.getDouble("quantity"));
         return dishOrder;
     }

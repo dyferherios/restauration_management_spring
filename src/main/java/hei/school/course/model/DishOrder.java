@@ -12,6 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 @Component
+
 public class DishOrder {
     private Long id;
     private Dish dish;

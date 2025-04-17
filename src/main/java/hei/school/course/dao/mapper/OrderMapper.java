@@ -33,7 +33,6 @@ public class OrderMapper implements Function<ResultSet, Order> {
                 .min(Comparator.comparingInt(dishOrder -> dishOrder.getStatus().size()))
                 .stream().findFirst();
         order.setCreationDate(resultSet.getTimestamp("creation_date"));
-        //dishOrderWithMinStatus.ifPresent(dishOrder -> order.setStatus(dishOrder.getStatus()));
         return order;
     }
 }

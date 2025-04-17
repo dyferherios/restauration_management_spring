@@ -84,8 +84,8 @@ public class OrderCrudOperations  implements CrudOperations<Order>{
                     try(ResultSet resultSet = statement.executeQuery()){
                         if(resultSet.next()){
                             Order orderSaved = orderMapper.apply(resultSet);
+                            orderSaved.setStatus(getOrderStatus(orderSaved.getId()));
                             orders.add(orderSaved);
-                            
                         }
                     }
                 } catch (SQLException e) {

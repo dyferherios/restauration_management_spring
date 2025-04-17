@@ -13,6 +13,7 @@ import java.util.List;
 @Data
 @Getter
 @Setter
+@ToString(exclude = {"dishIngredients"})
 public class Dish {
     private Long id;
     private String name;

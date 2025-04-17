@@ -180,10 +180,10 @@ public class DishCrudOperations implements CrudOperations<Dish> {
 
         String sqlWithId = "insert into dish_order (id, id_dish, id_order, quantity) values (?, ?, ?, ?)"
                 + " on conflict (id_dish, id_order) do update set quantity=excluded.quantity"
-                + " returning id, id_dish, id_order, quantity";
+                + " returning id as id_dish_order, id_dish, id_order, quantity";
         String sqlWithoutId = "insert into dish_order (id_dish, id_order, quantity) values (?, ?, ?)"
                 + " on conflict (id_dish, id_order) do update set quantity=excluded.quantity"
-                + " returning id, id_dish, id_order, quantity";
+                + " returning id as id_dish_order, id_dish, id_order, quantity";
 
         try (Connection connection = datasource.getConnection()) {
             PreparedStatement statementWithId = connection.prepareStatement(sqlWithId);
@@ -234,6 +234,7 @@ public class DishCrudOperations implements CrudOperations<Dish> {
                    statement.setLong(index++, dishOrder.getId());
                    statement.setString(index++, String.valueOf(dishOrder.getStatus().getLast().getStatus()));
                    statement.setObject(index, Timestamp.from(Instant.now()));
+                    System.out.println(statement);
                    try(ResultSet resultSet = statement.executeQuery()){
                        if(resultSet.next()){
                             DishAndOrderStatus dishAndOrderStatusSaved = dishAndOrderStatusMapper.apply(resultSet);

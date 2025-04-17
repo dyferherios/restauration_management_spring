@@ -28,6 +28,7 @@ public class OrderRestMapper {
           orderRest.setDishOrderRests(dishOrderRests);
           orderRest.setStatus(order.getActualStatus());
        }
+       orderRest.setStatus(order.getActualStatus());
        orderRest.setCreationDate(order.getCreationDate());
        return orderRest;
     }

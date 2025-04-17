@@ -8,6 +8,7 @@ import hei.school.course.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,15 +40,13 @@ public class OrderService {
            statusList = orderCrudOperations.getOrderStatus(orderSaved.getId());
        }
        orderSaved.setStatus(statusList);
-       if(orderSaved.getActualStatus().equals(Status.CONFIRMED)){
-           /*List<DishOrder> dishOrders = orderSaved.getDishOrders();
-           List<DishAndOrderStatus> finalStatusList = statusList;
-           dishOrders.forEach(dishOrder ->dishOrder.setStatus(finalStatusList));
-           dishOrders.forEach(dishOrder -> dishOrder.setOrder(orderSaved));
-           saveDishAndOrderStatus(dishOrders);*/
+       System.out.println("order saved with status list : " + orderSaved);
+       if(orderSaved.getDishOrders()!=null){
            List<DishOrder> dishOrders = getDishOrders(orderSaved, statusList.getFirst());
            saveDishAndOrderStatus(dishOrders);
        }
+
+       System.out.println(orderSaved);
        return orderSaved;
    }
 

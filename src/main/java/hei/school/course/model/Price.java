@@ -12,6 +12,7 @@ import static java.time.LocalDate.now;
 @Data
 @Getter
 @Setter
+@ToString(exclude = {"ingredient"})
 public class Price {
     private Long id;
     private Ingredient ingredient;
@@ -27,4 +28,5 @@ public class Price {
         this.amount = amount;
         this.dateValue = dateValue;
     }
+
 }
