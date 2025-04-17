@@ -1,12 +1,11 @@
 package hei.school.course.endpoint;
-import hei.school.course.endpoint.mapper.BasicDishAndOrderStatusRestMapper;
-import hei.school.course.endpoint.mapper.DishAndOrderStatusRestMapper;
-import hei.school.course.endpoint.mapper.DishOrderRestMapper;
-import hei.school.course.endpoint.mapper.OrderRestMapper;
+import hei.school.course.endpoint.mapper.*;
 import hei.school.course.endpoint.rest.BasicDishAndOrderStatusRest;
+import hei.school.course.endpoint.rest.DishBestSaleRest;
 import hei.school.course.endpoint.rest.DishOrderRest;
 import hei.school.course.endpoint.rest.OrderRest;
 import hei.school.course.model.DishAndOrderStatus;
+import hei.school.course.model.DishBestSale;
 import hei.school.course.model.DishOrder;
 import hei.school.course.model.Order;
 import hei.school.course.service.OrderService;
@@ -29,6 +28,7 @@ public class OrderRestController {
     private final OrderRestMapper orderRestMapper;
     private final DishOrderRestMapper dishOrderRestMapper;
     private final BasicDishAndOrderStatusRestMapper basicDishAndOrderStatusRestMapper;
+    private final DishBestSaleRestMapper dishBestSaleRestMapper;
 
     @PostMapping("/orders")
     public ResponseEntity<Object> saveAll(@RequestBody OrderRest orderRest) {
@@ -92,6 +92,23 @@ public class OrderRestController {
             DishOrder updatedDishOrder = orderService.updateDishOrderStatus(dishOrder);
             DishOrderRest updatedDishOrderRest = dishOrderRestMapper.apply(updatedDishOrder);
             return ResponseEntity.ok().body(updatedDishOrderRest);
+        }catch (ClientException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
+        } catch (ServerException e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/orders/bestSales")
+    public ResponseEntity<Object> getBestSales(@RequestParam String startDate, @RequestParam String endDate, @RequestParam int limit){
+        try{
+            List<DishBestSale> orders = orderService.getBestSales(startDate, endDate, limit);
+            List<DishBestSaleRest> orderRests = orders.stream()
+                    .map(dishBestSaleRestMapper::toRest)
+                    .toList();
+            return ResponseEntity.ok().body(orderRests);
         }catch (ClientException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (NotFoundException e) {

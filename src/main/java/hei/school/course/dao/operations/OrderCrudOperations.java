@@ -4,10 +4,7 @@ import ch.qos.logback.core.recovery.ResilientFileOutputStream;
 import hei.school.course.dao.Datasource;
 import hei.school.course.dao.mapper.DishAndOrderStatusMapper;
 import hei.school.course.dao.mapper.OrderMapper;
-import hei.school.course.model.Criteria;
-import hei.school.course.model.DishAndOrderStatus;
-import hei.school.course.model.Order;
-import hei.school.course.model.Status;
+import hei.school.course.model.*;
 import hei.school.course.service.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -132,5 +129,24 @@ public class OrderCrudOperations  implements CrudOperations<Order>{
         }
         return dishAndOrderStatusList;
     }
-    
+
+    @SneakyThrows
+    public List<Order> getOrderSales(String startDate, String endDate) {
+        List<Order> orderSales = new ArrayList<>();
+        String sql = "select o.id, o.order_reference, o.creation_date, os.order_status from orders o join order_status os on o.id = os.id_order where os.order_status= ?::order_status_process and os.creation_date between ?::timestamp and ?::timestamp";
+
+        try(Connection connection = datasource.getConnection();
+        PreparedStatement statement = connection.prepareStatement(sql)){
+            statement.setString(1, String.valueOf(Status.FINISHED));
+            statement.setObject(2, startDate);
+            statement.setObject(3, endDate);
+            try(ResultSet resultSet = statement.executeQuery()){
+                while(resultSet.next()){
+                    Order orderFinished = orderMapper.apply(resultSet);
+                    orderSales.add(orderFinished);
+                }
+            }
+        }
+        return orderSales;
+    }
 }

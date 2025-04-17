@@ -10,7 +10,9 @@ import org.springframework.stereotype.Service;
 
 import java.sql.SQLOutput;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -116,4 +118,49 @@ public class OrderService {
    public List<DishAndOrderStatus> saveDishAndOrderStatus(List<DishOrder> dishOrderList){
        return dishCrudOperations.saveDishOrderStatus(dishOrderList);
    }
+
+
+public List<DishBestSale> getBestSales(String startDate, String endDate, int limit){
+        List<Order> orders = orderCrudOperations.getOrderSales(startDate, endDate);
+    List<DishBestSale> dishBestSales = new ArrayList<>();
+    Map<Long, DishBestSale> dishMap = new HashMap<>();
+
+    for (Order order : orders) {
+        for (DishOrder dishOrder : order.getDishOrders()) {
+            Long dishId = dishOrder.getDish().getId();
+
+            // Utilisation d'une Map pour éviter les doublons
+            DishBestSale existingDish = dishMap.get(dishId);
+
+            if (existingDish != null) {
+                // Mise à jour des valeurs existantes
+                existingDish.setQuantity(existingDish.getQuantity() + dishOrder.getQuantity());
+                existingDish.setAmountTotal(existingDish.getAmountTotal() +
+                        (dishOrder.getDish().getPrice() * dishOrder.getQuantity()));
+            } else {
+                // Création d'un nouveau DishBestSale
+                DishBestSale newDish = new DishBestSale();
+                newDish.setDish(dishCrudOperations.findByCriteria(new Criteria("id", dishId)));
+                newDish.setQuantity(dishOrder.getQuantity());
+                newDish.setAmountTotal(dishOrder.getDish().getPrice() * dishOrder.getQuantity());
+
+                dishBestSales.add(newDish);
+                dishMap.put(dishId, newDish);
+            }
+        }
+    }
+
+    dishBestSales.sort((dishBestSale1, dishBestSale2) -> (int) (dishBestSale2.getQuantity() - dishBestSale1.getQuantity()));
+
+    if(limit > 0){
+        if(dishBestSales.size()<limit) {
+            System.out.println("passed here");
+           return dishBestSales;
+        }else{
+            dishBestSales = dishBestSales.subList(0, limit);
+        }
+    }
+
+    return dishBestSales;
+    }
 }
