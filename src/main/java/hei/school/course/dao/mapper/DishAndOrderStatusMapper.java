@@ -17,7 +17,6 @@ public class DishAndOrderStatusMapper implements Function<ResultSet, DishAndOrde
         DishAndOrderStatus dishAndOrderStatus = new DishAndOrderStatus();
         dishAndOrderStatus.setId(resultSet.getLong("id"));
         dishAndOrderStatus.setStatus(Status.valueOf(resultSet.getString("status")));
-        System.out.println(resultSet);
         dishAndOrderStatus.setDateValue((resultSet.getTimestamp("creation_date")).toInstant());
         return dishAndOrderStatus;
     }

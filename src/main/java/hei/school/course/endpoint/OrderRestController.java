@@ -1,6 +1,9 @@
 package hei.school.course.endpoint;
+import hei.school.course.endpoint.mapper.DishOrderRestMapper;
 import hei.school.course.endpoint.mapper.OrderRestMapper;
+import hei.school.course.endpoint.rest.DishOrderRest;
 import hei.school.course.endpoint.rest.OrderRest;
+import hei.school.course.model.DishOrder;
 import hei.school.course.model.Order;
 import hei.school.course.service.OrderService;
 import hei.school.course.service.exception.ClientException;
@@ -19,6 +22,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public class OrderRestController {
     private final OrderService orderService;
     private final OrderRestMapper orderRestMapper;
+    private final DishOrderRestMapper dishOrderRestMapper;
 
     @PostMapping("/orders")
     public ResponseEntity<Object> saveAll(@RequestBody OrderRest orderRest) {
@@ -29,7 +33,7 @@ public class OrderRestController {
             return ResponseEntity.ok().body(createdOrderRest);
         } catch (ClientException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (NotFoundException e) {
+        }catch (NotFoundException e) {
             return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
         } catch (ServerException e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
@@ -42,6 +46,26 @@ public class OrderRestController {
             Order order = orderService.findByReference(reference);
             OrderRest orderRest = orderRestMapper.toRest(order);
             return  ResponseEntity.ok().body(orderRest);
+        }catch (ClientException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
+        } catch (ServerException e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/orders/{reference}/dishes")
+    public ResponseEntity<Object> addDishOrder(@PathVariable String reference, @RequestBody List<DishOrderRest> dishOrderRests){
+        try{
+            Order order = orderService.findByReference(reference);
+            List<DishOrder> dishOrders = dishOrderRests.stream()
+                    .map(dishOrderRestMapper::toModel)
+                    .toList();
+            order.setDishOrders(dishOrders);
+            Order updatedOrder = orderService.addDishOrder(order);
+            OrderRest updatedOrderRest = orderRestMapper.toRest(updatedOrder);
+            return ResponseEntity.ok().body(updatedOrderRest);
         }catch (ClientException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (NotFoundException e) {

@@ -124,8 +124,6 @@ public class OrderCrudOperations  implements CrudOperations<Order>{
             statement.setString(2, String.valueOf(order.getStatus().getFirst().getStatus()));
             statement.setObject(3, order.getCreationDate());
             System.out.println(order.getCreationDate());
-            System.out.println(statement);
-            System.out.println("passed here");
             try(ResultSet resultset = statement.executeQuery()){
                 if(resultset.next()){
                     DishAndOrderStatus dishAndOrderStatus = dishAndOrderStatusMapper.apply(resultset);

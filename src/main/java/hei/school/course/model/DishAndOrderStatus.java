@@ -16,4 +16,5 @@ public class DishAndOrderStatus {
     private Long id;
     private Status status;
     private Instant dateValue;
+    private Order order;
 }
