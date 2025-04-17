@@ -26,29 +26,22 @@ public class OrderService {
    public Order saveAll(Order order){
        List<Order> orderSaves = orderCrudOperations.saveAll(List.of(order));
        Order orderSaved;
-       System.out.println("order " + order);
        if(orderSaves!=null && !orderSaves.isEmpty()){
            orderSaved = orderSaves.getFirst();
        }else{
-           System.out.println("passed here to get by criteria");
            orderSaved = orderCrudOperations.findByCriteria(new Criteria("order_reference", order.getReference()));
-           System.out.println("order saved : " + orderSaved);
        }
        orderSaved.setStatus(order.getStatus());
-       System.out.println("order to save status : " + orderSaved);
        List<DishAndOrderStatus> statusList = orderCrudOperations.saveOrderStatus(orderSaved);
        if(statusList.isEmpty()){
            statusList = orderCrudOperations.getOrderStatus(orderSaved.getId());
        }
        orderSaved.setStatus(statusList);
-       System.out.println("order saved with status list : " + orderSaved);
        if(orderSaved.getDishOrders()!=null){
            List<DishOrder> dishOrders = getDishOrders(orderSaved, statusList.getLast());
            saveDishAndOrderStatus(dishOrders);
-           System.out.println("dish orders : " + dishOrders);
        }
 
-       System.out.println(orderSaved);
        return orderSaved;
    }
 
@@ -68,6 +61,35 @@ public class OrderService {
               dishOrdersSaved.forEach(dishOrder -> dishOrder.setStatus(dishCrudOperations.getDishOrderStatus(order.getId(), dishOrder.getId())));
        }
        return order;
+   }
+
+   public DishOrder updateDishOrderStatus(DishOrder dishOrder){
+       List<DishAndOrderStatus> dishAndOrderStatusList = dishCrudOperations.saveDishOrderStatus(List.of(dishOrder));
+       if(dishAndOrderStatusList.isEmpty()){
+           dishAndOrderStatusList = dishCrudOperations.getDishOrderStatus(dishOrder.getOrder().getId(), dishOrder.getId());
+       }
+       dishOrder.setStatus(dishAndOrderStatusList);
+       Status currentStatus = dishOrder.getOrder().getActualStatus();
+       boolean checkStatus = true;
+       List<DishOrder> dishOrders = dishCrudOperations.findByOrderId(dishOrder.getOrder().getId());
+       dishOrders.forEach(dishOrder1 -> dishOrder1.setOrder(dishOrder.getOrder()));
+       for (DishOrder dishOrderTmp : dishOrders) {
+           if (currentStatus != dishOrderTmp.getOrder().getActualStatus()) {
+               checkStatus = false;
+           }
+       }
+
+       System.out.println("dish orders : " + dishOrders);
+       if(checkStatus){
+           System.out.println("passed here");
+           Order order = dishOrders.getFirst().getOrder();
+           order.setStatus(dishOrders.getFirst().getStatus());
+           System.out.println(dishOrders.getFirst().getStatus());
+           System.out.println("orders to save status : " + order);
+           orderCrudOperations.saveOrderStatus(order);
+       }
+
+      return dishOrder;
    }
 
     private static List<DishOrder> getDishOrders(Order order, DishAndOrderStatus statusList) {
