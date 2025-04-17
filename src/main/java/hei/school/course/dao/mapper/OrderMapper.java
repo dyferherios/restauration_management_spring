@@ -25,15 +25,15 @@ public class OrderMapper implements Function<ResultSet, Order> {
         Order order = new Order();
         Long orderId = resultSet.getLong("id");
         order.setId(orderId);
-        order.setReference(resultSet.getString("order_references"));
+        order.setReference(resultSet.getString("order_reference"));
         List<DishOrder> dishOrderList = dishCrudOperations.findByOrderId(orderId);
         order.setDishOrders(dishOrderList);
         Optional<DishOrder> dishOrderWithMinStatus = dishOrderList.stream()
                 .filter(dishOrder -> dishOrder.getStatus() != null)
                 .min(Comparator.comparingInt(dishOrder -> dishOrder.getStatus().size()))
                 .stream().findFirst();
-        dishOrderWithMinStatus.ifPresent(dishOrder -> order.setStatus(dishOrder.getStatus()));
-
+        order.setCreationDate(resultSet.getTimestamp("creation_date"));
+        //dishOrderWithMinStatus.ifPresent(dishOrder -> order.setStatus(dishOrder.getStatus()));
         return order;
     }
 }

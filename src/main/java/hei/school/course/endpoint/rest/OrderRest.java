@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 
 @AllArgsConstructor
@@ -20,4 +21,5 @@ public class OrderRest {
    private String reference;
    private List<DishOrderRest> dishOrderRests;
    private Status status;
+   private Date creationDate;
 }

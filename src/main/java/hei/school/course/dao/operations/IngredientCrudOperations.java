@@ -66,6 +66,11 @@ public class IngredientCrudOperations implements CrudOperations<Ingredient> {
         }
     }
 
+    @Override
+    public Ingredient findByCriteria(Criteria criteria) {
+        return null;
+    }
+
     @SneakyThrows
     @Override
     public List<Ingredient> saveAll(List<Ingredient> entities) {

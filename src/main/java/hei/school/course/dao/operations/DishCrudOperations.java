@@ -63,6 +63,11 @@ public class DishCrudOperations implements CrudOperations<Dish> {
     }
 
     @Override
+    public Dish findByCriteria(Criteria criteria) {
+        return null;
+    }
+
+    @Override
     public List<Dish> saveAll(List<Dish> entities) {
         List<Dish> dishes = new ArrayList<>();
         String sqlWithId = "insert into dish (id, name, price) values (?, ?, ?)"
@@ -141,22 +146,64 @@ public class DishCrudOperations implements CrudOperations<Dish> {
 
     @SneakyThrows
     public List<DishAndOrderStatus> getDishOrderStatus(Long orderId, Long dishOrderId){
-       List<DishAndOrderStatus> dishAndOrderStatusList = new ArrayList<>();
-       String sql = "select dos.id,dos.id_order_status,dos.id_dish_order, os.id_order, os.status, os.creation_date " +
-               "from dish_order_status dos join order_status os on dos.id_order_status=os.id " +
-               "where dos.id_dish_order=? and os.id_order=?";
-       try(Connection connection = datasource.getConnection();
-       PreparedStatement statement = connection.prepareStatement(sql)){
-           statement.setLong(1, dishOrderId);
-           statement.setLong(2, orderId);
-           try(ResultSet resultSet = statement.executeQuery()){
-               while(resultSet.next()){
-                   DishAndOrderStatus dishAndOrderStatus = dishAndOrderStatusMapper.apply(resultSet);
-                   dishAndOrderStatusList.add(dishAndOrderStatus);
-               }
-           }
-       }
-       return dishAndOrderStatusList;
+        List<DishAndOrderStatus> dishAndOrderStatusList = new ArrayList<>();
+        String sql = "select dos.id,dos.id_order,dos.id_dish_order, dos.dish_status as status, dos.creation_date from dish_order_status dos where dos.id_order=? and dos.id_dish_order=?";
+        try(Connection connection = datasource.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sql)){
+            statement.setLong(1, orderId);
+            statement.setLong(2, dishOrderId);
+            try(ResultSet resultSet = statement.executeQuery()){
+                while(resultSet.next()){
+                    DishAndOrderStatus dishAndOrderStatus = dishAndOrderStatusMapper.apply(resultSet);
+                    dishAndOrderStatusList.add(dishAndOrderStatus);
+                }
+            }
+        }
+        return dishAndOrderStatusList;
     }
+
+    @SneakyThrows
+    public List<DishOrder> saveAllDishOrder(List<DishOrder> dishOrders){
+        List<DishOrder> dishOrderSaves = new ArrayList<>();
+
+        String sqlWithId = "insert into dish_order (id, id_dish, id_order, quantity) values (?, ?, ?, ?)"
+                + " on conflict (id_dish, id_order) do update set quantity=excluded.quantity"
+                + " returning id, id_dish, id_order, quantity";
+        String sqlWithoutId = "insert into dish_order (id_dish, id_order, quantity) values (?, ?, ?)"
+                + " on conflict (id_dish, id_order) do update set quantity=excluded.quantity"
+                + " returning id, id_dish, id_order, quantity";
+
+        try (Connection connection = datasource.getConnection()) {
+            PreparedStatement statementWithId = connection.prepareStatement(sqlWithId);
+            PreparedStatement statementWithoutId = connection.prepareStatement(sqlWithoutId);
+
+            dishOrders.forEach(dishOrder -> {
+                int index = 1;
+                PreparedStatement statement;
+                try{
+                    if(dishOrder.getId()!=null){
+                        statement = statementWithId;
+                        statement.setLong(index++, dishOrder.getId());
+                    }else{
+                        statement = statementWithoutId;
+                    }
+                    statement.setLong(index++, dishOrder.getDish().getId());
+                    statement.setLong(index++, dishOrder.getOrder().getId());
+                    statement.setDouble(index, dishOrder.getQuantity());
+                    try(ResultSet resultSet = statement.executeQuery()){
+                        if(resultSet.next()){
+                            DishOrder dishOrderSaved = dishOrderMapper.apply(resultSet);
+                            dishOrderSaves.add(dishOrderSaved);
+                        }
+                    }
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+
+        return dishOrderSaves;
+    }
+
 
 }
