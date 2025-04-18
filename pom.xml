@@ -47,7 +47,7 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<scope>42.7.1</scope>
+			<scope>42.7.3</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
