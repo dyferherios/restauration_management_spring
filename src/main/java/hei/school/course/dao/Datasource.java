@@ -9,17 +9,14 @@ import java.sql.SQLException;
 
 @Configuration
 public class Datasource {
-    @Value("${spring.datasource.url}")
-    private String dbUrl;
-
-    @Value("${spring.datasource.username}")
-    private String user;
-
-    @Value("${spring.datasource.password}")
-    private String password;
+    String dbUrl = System.getenv("DB_URL");
+    String user = System.getenv("DB_USER");
+    String password = System.getenv("DB_PASSWORD");
 
     public Connection getConnection() throws SQLException {
-        System.out.println("Connecting to: " + dbUrl.replace(password, "****"));
+        if (dbUrl == null || user == null || password == null) {
+            throw new IllegalStateException("Database environment variables not set!");
+        }
         return DriverManager.getConnection(dbUrl, user, password);
     }
 }
