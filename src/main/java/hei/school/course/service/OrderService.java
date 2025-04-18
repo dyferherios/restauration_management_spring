@@ -40,7 +40,7 @@ public class OrderService {
        }
        orderSaved.setStatus(statusList);
        if(orderSaved.getDishOrders()!=null){
-           List<DishOrder> dishOrders = getDishOrders(orderSaved, statusList.getLast());
+           List<DishOrder> dishOrders = getDishOrders(orderSaved, statusList.get(statusList.size()-1));
            saveDishAndOrderStatus(dishOrders);
        }
 
