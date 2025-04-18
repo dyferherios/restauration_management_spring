@@ -14,10 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Time;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.time.Instant;
+import java.util.*;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -30,9 +28,13 @@ public class OrderRestController {
     private final BasicDishAndOrderStatusRestMapper basicDishAndOrderStatusRestMapper;
     private final DishBestSaleRestMapper dishBestSaleRestMapper;
 
-    @PostMapping("/orders")
-    public ResponseEntity<Object> saveAll(@RequestBody OrderRest orderRest) {
+    @PostMapping("/orders/{reference}")
+    public ResponseEntity<Object> saveAll(@PathVariable String reference) {
         try {
+            OrderRest orderRest = new OrderRest();
+            orderRest.setReference(reference);
+            orderRest.setStatus(Status.CREATED);
+            orderRest.setCreationDate(Date.from(Instant.now()));
             Order order = orderRestMapper.toModel(orderRest);
             Order createdOrder = orderService.saveAll(order);
             OrderRest createdOrderRest = orderRestMapper.toRest(createdOrder);
@@ -45,6 +47,28 @@ public class OrderRestController {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
+
+    @PutMapping("/orders/{reference}")
+    public ResponseEntity<Object> saveOrderStatus(@PathVariable String reference,
+                                                  @RequestBody OrderRest orderRestToSave) {
+        try {
+            OrderRest orderRest = new OrderRest();
+            orderRest.setReference(reference);
+            orderRest.setStatus(orderRestToSave.getStatus());
+            orderRest.setCreationDate(Date.from(Instant.now()));
+            Order order = orderRestMapper.toModel(orderRest);
+            Order createdOrder = orderService.saveAll(order);
+            OrderRest createdOrderRest = orderRestMapper.toRest(createdOrder);
+            return ResponseEntity.ok().body(createdOrderRest);
+        } catch (ClientException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }catch (NotFoundException e) {
+            return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
+        } catch (ServerException e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
+    }
+
 
     @GetMapping("/orders/{reference}")
     public ResponseEntity<Object> getByReference(@PathVariable String reference){
@@ -62,10 +86,10 @@ public class OrderRestController {
     }
 
     @PutMapping("/orders/{reference}/dishes")
-    public ResponseEntity<Object> addDishOrder(@PathVariable String reference, @RequestBody List<DishOrderRest> dishOrderRests){
+    public ResponseEntity<Object> addDishOrder(@PathVariable String reference, @RequestBody OrderRest orderRest){
         try{
             Order order = orderService.findByReference(reference);
-            List<DishOrder> dishOrders = dishOrderRests.stream()
+            List<DishOrder> dishOrders = orderRest.getDishOrderRests().stream()
                     .map(dishOrderRestMapper::toModel)
                     .toList();
             order.setDishOrders(dishOrders);
@@ -101,7 +125,7 @@ public class OrderRestController {
         }
     }
 
-    @GetMapping("/orders/bestSales")
+    @GetMapping("/orders/sales")
     public ResponseEntity<Object> getBestSales(@RequestParam String startDate, @RequestParam String endDate, @RequestParam int limit){
         try{
             List<DishBestSale> orders = orderService.getBestSales(startDate, endDate, limit);

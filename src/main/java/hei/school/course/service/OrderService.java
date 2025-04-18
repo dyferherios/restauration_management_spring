@@ -48,9 +48,13 @@ public class OrderService {
    }
 
    public Order addDishOrder(Order order){
-       DishAndOrderStatus status = orderCrudOperations.getOrderStatus(order.getId()).getLast();
-       status.setOrder(order);
-       List<DishOrder> dishOrders = getDishOrders(order, status);
+       DishAndOrderStatus status = orderCrudOperations.getOrderStatus(order.getId()).stream()
+               .filter(status1 -> status1.getStatus().equals(order.getActualStatus())).findFirst().orElse(null);
+       List<DishOrder> dishOrders = new ArrayList<>();
+       if(status!=null){
+           status.setOrder(order);
+           dishOrders = getDishOrders(order, status);
+       }
        order.setDishOrders(saveAllDishOrder(dishOrders));
        List<DishOrder> dishOrderList = saveAllDishOrder(dishOrders);
        if(dishOrderList==null){
@@ -189,7 +193,6 @@ public List<DishBestSale> getBestSales(String startDate, String endDate, int lim
         }
         return durations;
     }
-
 
     public List<Order> getAllOrderBetweenDates(String startDate, String endDate){
         return orderCrudOperations.getOrderSalesBetweenDates(startDate, endDate);
