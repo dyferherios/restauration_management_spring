@@ -149,4 +149,22 @@ public class OrderCrudOperations  implements CrudOperations<Order>{
         }
         return orderSales;
     }
+
+    @SneakyThrows
+    public List<Order> getOrderSalesBetweenDates(String startDate, String endDate) {
+        List<Order> orderSales = new ArrayList<>();
+        String sql = "select o.id, o.order_reference, o.creation_date, os.order_status from orders o join order_status os on o.id = os.id_order where os.order_status='FINISHED' and os.creation_date between ?::timestamp and ?::timestamp";
+        try (Connection connection = datasource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setObject(1, startDate);
+            statement.setObject(2, endDate);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    Order orderFinished = orderMapper.apply(resultSet);
+                    orderSales.add(orderFinished);
+                }
+            }
+        }
+        return orderSales;
+    }
 }

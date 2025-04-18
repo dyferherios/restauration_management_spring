@@ -4,10 +4,7 @@ import hei.school.course.endpoint.rest.BasicDishAndOrderStatusRest;
 import hei.school.course.endpoint.rest.DishBestSaleRest;
 import hei.school.course.endpoint.rest.DishOrderRest;
 import hei.school.course.endpoint.rest.OrderRest;
-import hei.school.course.model.DishAndOrderStatus;
-import hei.school.course.model.DishBestSale;
-import hei.school.course.model.DishOrder;
-import hei.school.course.model.Order;
+import hei.school.course.model.*;
 import hei.school.course.service.OrderService;
 import hei.school.course.service.exception.ClientException;
 import hei.school.course.service.exception.NotFoundException;
@@ -16,8 +13,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Time;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -110,6 +110,43 @@ public class OrderRestController {
                     .toList();
             return ResponseEntity.ok().body(orderRests);
         }catch (ClientException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(NOT_FOUND).body(e.getMessage());
+        } catch (ServerException e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/orders/dishes/{dishId}/processingTime")
+    public ResponseEntity<Object> getProcessingTime(@PathVariable Long dishId,
+                                                    @RequestParam String startDate,
+                                                    @RequestParam String endDate,
+                                                    @RequestParam(required = false, defaultValue = "SECONDS") String durationFormat,
+                                                    @RequestParam(required = false, defaultValue = "AVERAGE") String durationLevel) {
+        try {
+            List<Order> orders = orderService.getAllOrderBetweenDates(startDate, endDate);
+            System.out.println("orders : " + orders);
+            List<DishOrder> dishOrders = orders.stream()
+                    .flatMap(order -> Optional.ofNullable(order.getDishOrders())
+                            .stream()
+                            .flatMap(List::stream))
+                    .filter(dishOrder -> Optional.ofNullable(dishOrder.getDish())
+                            .map(Dish::getId)
+                            .filter(id -> id.equals(dishId))
+                            .isPresent())
+                    .toList();
+            Double processingTime = orderService.getProcessingTimeForDish(dishOrders, durationFormat, durationLevel);
+            ProcessingTimeDish processingtimeDish = new ProcessingTimeDish(
+                    dishOrders.getFirst().getDish().getName(),
+                    durationFormat,
+                    durationLevel,
+                    processingTime,
+                    startDate,
+                    endDate
+            );
+            return ResponseEntity.ok().body(processingtimeDish);
+        } catch (ClientException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (NotFoundException e) {
             return ResponseEntity.status(NOT_FOUND).body(e.getMessage());

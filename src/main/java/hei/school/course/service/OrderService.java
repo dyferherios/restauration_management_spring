@@ -5,14 +5,14 @@ import hei.school.course.dao.operations.OrderCrudOperations;
 import hei.school.course.endpoint.mapper.DishOrderRestMapper;
 import hei.school.course.endpoint.rest.DishOrderRest;
 import hei.school.course.model.*;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLOutput;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Time;
+import java.time.Duration;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -154,7 +154,6 @@ public List<DishBestSale> getBestSales(String startDate, String endDate, int lim
 
     if(limit > 0){
         if(dishBestSales.size()<limit) {
-            System.out.println("passed here");
            return dishBestSales;
         }else{
             dishBestSales = dishBestSales.subList(0, limit);
@@ -162,5 +161,37 @@ public List<DishBestSale> getBestSales(String startDate, String endDate, int lim
     }
 
     return dishBestSales;
+    }
+
+    public Double getProcessingTimeForDish(List<DishOrder> dishOrders, String timeFormat, String timeLevel){
+        List<Double> durations = getDoubles(dishOrders, timeFormat);
+
+        if(timeLevel.equals("MINIMUM")){
+            return durations.stream().mapToDouble(Double::doubleValue).min().orElse(0);
+        }else if(timeLevel.equals("AVERAGE")) {
+            return durations.stream().mapToDouble(Double::doubleValue).average().orElse(0);
+        }else{
+            return durations.stream().mapToDouble(Double::doubleValue).max().orElse(0);
+        }
+    }
+
+    private static List<Double> getDoubles(List<DishOrder> dishOrders, String timeFormat) {
+        List<Double> durations = new ArrayList<>();
+        for(DishOrder dishOrder : dishOrders){
+            Duration processingTime = dishOrder.getProcessingTime();
+            if(timeFormat.equals("SECONDS")){
+                durations.add((double) processingTime.toSeconds());
+            }else if(timeFormat.equals("MINUTES")){
+                durations.add(processingTime.toSeconds() / 60.0);
+            }else{
+                durations.add(processingTime.toSeconds() / 3600.0);
+            }
+        }
+        return durations;
+    }
+
+
+    public List<Order> getAllOrderBetweenDates(String startDate, String endDate){
+        return orderCrudOperations.getOrderSalesBetweenDates(startDate, endDate);
     }
 }
