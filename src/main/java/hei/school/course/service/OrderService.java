@@ -123,7 +123,6 @@ public class OrderService {
        return dishCrudOperations.saveDishOrderStatus(dishOrderList);
    }
 
-
 public List<DishBestSale> getBestSales(String startDate, String endDate, int limit){
         List<Order> orders = orderCrudOperations.getOrderSales(startDate, endDate);
     List<DishBestSale> dishBestSales = new ArrayList<>();

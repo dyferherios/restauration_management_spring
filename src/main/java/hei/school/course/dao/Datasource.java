@@ -1,6 +1,6 @@
 package hei.school.course.dao;
 
-import hei.school.course.service.exception.ServerException;
+import com.google.api.client.util.Value;
 import org.springframework.context.annotation.Configuration;
 
 import java.sql.Connection;
@@ -9,24 +9,17 @@ import java.sql.SQLException;
 
 @Configuration
 public class Datasource {
-    private final String user = System.getenv("db_user");
-    private final String pwd = System.getenv("db_password");
-    private final String dbUrl = System.getenv("db_url");
-    private final String dbHost = System.getenv("db_host");
-    private final String dbPort = System.getenv("db_port");
-    private final String dbName = System.getenv("db_name");
-    private final String jdbcUrl;
+    @Value("${spring.datasource.url}")
+    private String dbUrl;
 
+    @Value("${spring.datasource.username}")
+    private String user;
 
-    public Datasource() {
-        jdbcUrl = dbUrl + dbHost + ":" + dbPort + "/" + dbName;
-    }
+    @Value("${spring.datasource.password}")
+    private String password;
 
-    public Connection getConnection() {
-        try {
-            return DriverManager.getConnection(jdbcUrl, user, pwd);
-        } catch (SQLException e) {
-            throw new ServerException(e);
-        }
+    public Connection getConnection() throws SQLException {
+        System.out.println("Connecting to: " + dbUrl.replace(password, "****"));
+        return DriverManager.getConnection(dbUrl, user, password);
     }
 }
