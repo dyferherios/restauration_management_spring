@@ -24,7 +24,7 @@ public class Order {
 
     public Status getActualStatus() {
         List<DishAndOrderStatus> statuses = getStatus();
-        return statuses.getLast().getStatus();
+        return statuses.get(statuses.size()-1).getStatus();
     }
 
 

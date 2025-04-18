@@ -118,7 +118,7 @@ public class OrderCrudOperations  implements CrudOperations<Order>{
         try(Connection connection = datasource.getConnection();
             PreparedStatement statement = connection.prepareStatement(sql)){
             statement.setLong(1, order.getId());
-            statement.setString(2, String.valueOf(order.getStatus().getLast().getStatus()));
+            statement.setString(2, String.valueOf(order.getStatus().get(order.getStatus().size()-1).getStatus()));
             statement.setObject(3, order.getCreationDate());
             try(ResultSet resultset = statement.executeQuery()){
                 if(resultset.next()){

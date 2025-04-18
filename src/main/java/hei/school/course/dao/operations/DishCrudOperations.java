@@ -231,7 +231,7 @@ public class DishCrudOperations implements CrudOperations<Dish> {
                 try{
                    statement.setLong(index++, dishOrder.getOrder().getId());
                    statement.setLong(index++, dishOrder.getId());
-                   statement.setString(index++, String.valueOf(dishOrder.getStatus().getLast().getStatus()));
+                   statement.setString(index++, String.valueOf(dishOrder.getStatus().get(dishOrder.getStatus().size()-1).getStatus()));
                    statement.setObject(index, Timestamp.from(Instant.now()));
                     System.out.println(statement);
                    try(ResultSet resultSet = statement.executeQuery()){

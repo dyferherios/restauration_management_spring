@@ -29,7 +29,7 @@ public class OrderService {
        List<Order> orderSaves = orderCrudOperations.saveAll(List.of(order));
        Order orderSaved;
        if(orderSaves!=null && !orderSaves.isEmpty()){
-           orderSaved = orderSaves.getFirst();
+           orderSaved = orderSaves.get(0);
        }else{
            orderSaved = orderCrudOperations.findByCriteria(new Criteria("order_reference", order.getReference()));
        }
@@ -88,9 +88,9 @@ public class OrderService {
        System.out.println("dish orders : " + dishOrders);
        if(checkStatus){
            System.out.println("passed here");
-           Order order = dishOrders.getFirst().getOrder();
-           order.setStatus(dishOrders.getFirst().getStatus());
-           System.out.println(dishOrders.getFirst().getStatus());
+           Order order = dishOrders.get(0).getOrder();
+           order.setStatus(dishOrders.get(0).getStatus());
+           System.out.println(dishOrders.get(0).getStatus());
            System.out.println("orders to save status : " + order);
            orderCrudOperations.saveOrderStatus(order);
        }

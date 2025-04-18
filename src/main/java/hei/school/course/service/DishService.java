@@ -24,6 +24,6 @@ public class DishService {
        Dish dish = dishCrudOperations.findById(dishId);
        dish.setDishIngredients(dishIngredients);
        List<Dish> dishes = dishCrudOperations.saveAll(List.of(dish));
-       return dishes.getFirst();
+       return dishes.get(0);
     }
 }

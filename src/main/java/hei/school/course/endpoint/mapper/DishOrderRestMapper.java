@@ -26,7 +26,7 @@ public class DishOrderRestMapper implements Function<DishOrder, DishOrderRest> {
        dishOrderRest.setName(dishOrder.getDish().getName());
        dishOrderRest.setQuantity(dishOrder.getQuantity());
        List<DishAndOrderStatus> statusList = dishOrder.getStatus();
-       dishOrderRest.setStatus(statusList.getLast().getStatus());
+       dishOrderRest.setStatus(statusList.get(statusList.size()-1).getStatus());
        dishOrderRest.setPrice(dishOrder.getDish().getPrice());
        return dishOrderRest;
     }

@@ -110,7 +110,7 @@ public class OrderRestController {
         try{
             Order order = orderService.findByReference(reference);
             DishAndOrderStatus dishAndOrderStatus = basicDishAndOrderStatusRestMapper.toModel(dishAndOrderStatusRest);
-            DishOrder dishOrder = order.getDishOrders().stream().filter(dishOrder1 -> Objects.equals(dishOrder1.getDish().getId(), dishId)).toList().getFirst();
+            DishOrder dishOrder = order.getDishOrders().stream().filter(dishOrder1 -> Objects.equals(dishOrder1.getDish().getId(), dishId)).toList().get(0);
             dishOrder.setStatus(List.of(dishAndOrderStatus));
             dishOrder.setOrder(order);
             DishOrder updatedDishOrder = orderService.updateDishOrderStatus(dishOrder);
@@ -162,7 +162,7 @@ public class OrderRestController {
                     .toList();
             Double processingTime = orderService.getProcessingTimeForDish(dishOrders, durationFormat, durationLevel);
             ProcessingTimeDish processingtimeDish = new ProcessingTimeDish(
-                    dishOrders.getFirst().getDish().getName(),
+                    dishOrders.get(0).getDish().getName(),
                     durationFormat,
                     durationLevel,
                     processingTime,
