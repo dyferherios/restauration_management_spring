@@ -43,7 +43,6 @@ public class OrderService {
            List<DishOrder> dishOrders = getDishOrders(orderSaved, statusList.get(statusList.size()-1));
            saveDishAndOrderStatus(dishOrders);
        }
-
        return orderSaved;
    }
 
@@ -132,16 +131,13 @@ public List<DishBestSale> getBestSales(String startDate, String endDate, int lim
         for (DishOrder dishOrder : order.getDishOrders()) {
             Long dishId = dishOrder.getDish().getId();
 
-            // Utilisation d'une Map pour éviter les doublons
             DishBestSale existingDish = dishMap.get(dishId);
 
             if (existingDish != null) {
-                // Mise à jour des valeurs existantes
                 existingDish.setQuantity(existingDish.getQuantity() + dishOrder.getQuantity());
                 existingDish.setAmountTotal(existingDish.getAmountTotal() +
                         (dishOrder.getDish().getPrice() * dishOrder.getQuantity()));
             } else {
-                // Création d'un nouveau DishBestSale
                 DishBestSale newDish = new DishBestSale();
                 newDish.setDish(dishCrudOperations.findByCriteria(new Criteria("id", dishId)));
                 newDish.setQuantity(dishOrder.getQuantity());
