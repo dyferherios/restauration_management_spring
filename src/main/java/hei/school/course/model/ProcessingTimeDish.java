@@ -9,6 +9,7 @@ import lombok.*;
 @Getter
 @Setter
 public class ProcessingTimeDish {
+    private Long dishId;
     private String dishName;
     private String durationFormat;
     private String durationLevel;

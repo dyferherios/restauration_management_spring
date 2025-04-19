@@ -23,6 +23,7 @@ public class Datasource {
             throw new IllegalArgumentException("Erreur : Certaines variables d'environnement sont manquantes.");
         }
         jdbcUrl = String.format("%s%s:%s/%s", dbUrl, dbHost, dbPort, dbName);
+        System.out.println(jdbcUrl);
     }
 
     public Connection getConnection() {

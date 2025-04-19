@@ -132,7 +132,6 @@ public class OrderRestController {
         try{
             String defaultStartDate = "1999-01-01";
             String defaultEndDate = LocalDate.now().plusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
-
             if (startDate == null) {
                 startDate = defaultStartDate;
             }
@@ -156,7 +155,6 @@ public class OrderRestController {
 
     @GetMapping("/orders/dishes/{dishId}/processingTime")
     public ResponseEntity<Object> getProcessingTime(@PathVariable Long dishId,
-                                                    @RequestParam int top,
                                                     @RequestParam(required = false) String startDate,
                                                     @RequestParam(required = false) String endDate,
                                                     @RequestParam(required = false, defaultValue = "SECONDS") String durationUnit,
@@ -184,7 +182,8 @@ public class OrderRestController {
                     .toList();
             Double processingTime = orderService.getProcessingTimeForDish(dishOrders, durationUnit, calculationMode);
             ProcessingTimeDish processingtimeDish = new ProcessingTimeDish(
-                    dishOrders.get(0).getDish().getName(),
+                    dishOrders.getFirst().getDish().getId(),
+                    dishOrders.getFirst().getDish().getName(),
                     durationUnit,
                     calculationMode,
                     processingTime,

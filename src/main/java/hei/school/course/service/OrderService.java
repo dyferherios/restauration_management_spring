@@ -164,7 +164,6 @@ public List<DishBestSale> getBestSales(String startDate, String endDate, int lim
 
     public Double getProcessingTimeForDish(List<DishOrder> dishOrders, String timeFormat, String timeLevel){
         List<Double> durations = getDoubles(dishOrders, timeFormat);
-
         if(timeLevel.equals("MINIMUM")){
             return durations.stream().mapToDouble(Double::doubleValue).min().orElse(0);
         }else if(timeLevel.equals("AVERAGE")) {
