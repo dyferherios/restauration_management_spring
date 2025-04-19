@@ -140,6 +140,7 @@ public class OrderCrudOperations  implements CrudOperations<Order>{
             statement.setString(1, String.valueOf(Status.FINISHED));
             statement.setObject(2, startDate);
             statement.setObject(3, endDate);
+            System.out.println(statement);
             try(ResultSet resultSet = statement.executeQuery()){
                 while(resultSet.next()){
                     Order orderFinished = orderMapper.apply(resultSet);

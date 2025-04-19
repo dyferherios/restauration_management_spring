@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Time;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -126,8 +128,18 @@ public class OrderRestController {
     }
 
     @GetMapping("/orders/sales")
-    public ResponseEntity<Object> getBestSales(@RequestParam String startDate, @RequestParam String endDate, @RequestParam int limit){
+    public ResponseEntity<Object> getBestSales(@RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate, @RequestParam int limit){
         try{
+            String defaultStartDate = "1999-01-01";
+            String defaultEndDate = LocalDate.now().plusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+            if (startDate == null) {
+                startDate = defaultStartDate;
+            }
+            if (endDate == null) {
+                endDate = defaultEndDate;
+            }
+
             List<DishBestSale> orders = orderService.getBestSales(startDate, endDate, limit);
             List<DishBestSaleRest> orderRests = orders.stream()
                     .map(dishBestSaleRestMapper::toRest)

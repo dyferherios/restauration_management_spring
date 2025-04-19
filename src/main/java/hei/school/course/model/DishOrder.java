@@ -25,9 +25,9 @@ public class DishOrder {
 
     public Duration getProcessingTime(){
         Instant dateValueStatusInProgress = status.stream().filter(status -> status.getStatus() == Status.INPROGRESS)
-                .toList().get(status.size()-1).getDateValue();
+                .toList().getLast().getDateValue();
         Instant dateValueStatusFinished = status.stream().filter(status -> status.getStatus() == Status.FINISHED)
-                .toList().get(status.size()-1).getDateValue();
+                .toList().getLast().getDateValue();
 
         return Duration.between(dateValueStatusInProgress, dateValueStatusFinished);
 
