@@ -128,7 +128,7 @@ public class OrderRestController {
     }
 
     @GetMapping("/orders/sales")
-    public ResponseEntity<Object> getBestSales(@RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate, @RequestParam int limit){
+    public ResponseEntity<Object> getBestSales(@RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate, @RequestParam int top){
         try{
             String defaultStartDate = "1999-01-01";
             String defaultEndDate = LocalDate.now().plusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
@@ -140,7 +140,7 @@ public class OrderRestController {
                 endDate = defaultEndDate;
             }
 
-            List<DishBestSale> orders = orderService.getBestSales(startDate, endDate, limit);
+            List<DishBestSale> orders = orderService.getBestSales(startDate, endDate, top);
             List<DishBestSaleRest> orderRests = orders.stream()
                     .map(dishBestSaleRestMapper::toRest)
                     .toList();
@@ -156,13 +156,23 @@ public class OrderRestController {
 
     @GetMapping("/orders/dishes/{dishId}/processingTime")
     public ResponseEntity<Object> getProcessingTime(@PathVariable Long dishId,
-                                                    @RequestParam String startDate,
-                                                    @RequestParam String endDate,
-                                                    @RequestParam(required = false, defaultValue = "SECONDS") String durationFormat,
-                                                    @RequestParam(required = false, defaultValue = "AVERAGE") String durationLevel) {
+                                                    @RequestParam int top,
+                                                    @RequestParam(required = false) String startDate,
+                                                    @RequestParam(required = false) String endDate,
+                                                    @RequestParam(required = false, defaultValue = "SECONDS") String durationUnit,
+                                                    @RequestParam(required = false, defaultValue = "AVERAGE") String calculationMode) {
         try {
+            String defaultStartDate = "1999-01-01";
+            String defaultEndDate = LocalDate.now().plusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+            if (startDate == null) {
+                startDate = defaultStartDate;
+            }
+            if (endDate == null) {
+                endDate = defaultEndDate;
+            }
+
             List<Order> orders = orderService.getAllOrderBetweenDates(startDate, endDate);
-            System.out.println("orders : " + orders);
             List<DishOrder> dishOrders = orders.stream()
                     .flatMap(order -> Optional.ofNullable(order.getDishOrders())
                             .stream()
@@ -172,11 +182,11 @@ public class OrderRestController {
                             .filter(id -> id.equals(dishId))
                             .isPresent())
                     .toList();
-            Double processingTime = orderService.getProcessingTimeForDish(dishOrders, durationFormat, durationLevel);
+            Double processingTime = orderService.getProcessingTimeForDish(dishOrders, durationUnit, calculationMode);
             ProcessingTimeDish processingtimeDish = new ProcessingTimeDish(
                     dishOrders.get(0).getDish().getName(),
-                    durationFormat,
-                    durationLevel,
+                    durationUnit,
+                    calculationMode,
                     processingTime,
                     startDate,
                     endDate
